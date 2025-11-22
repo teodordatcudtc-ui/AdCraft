@@ -131,6 +131,7 @@ export default function Dashboard() {
     console.log('🔄 Starting loadUserData for:', userId)
 
     try {
+      console.log('📡 Starting Promise.all for data fetching...')
       // Încarcă toate datele în paralel
       const [creditsResult, transactionsResult, logsResult, generationsResult, profileResult] = await Promise.all([
         (async () => {
@@ -141,12 +142,22 @@ export default function Dashboard() {
             return { data: null, error: err }
           }
         })(),
-        supabase
-          .from('credit_transactions')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(100),
+        (async () => {
+          try {
+            console.log('📊 Fetching credit_transactions...')
+            const result = await supabase
+              .from('credit_transactions')
+              .select('*')
+              .eq('user_id', userId)
+              .order('created_at', { ascending: false })
+              .limit(100)
+            console.log('📊 credit_transactions fetched:', { count: result.data?.length || 0, error: result.error })
+            return result
+          } catch (err) {
+            console.error('❌ Error fetching transactions:', err)
+            return { data: null, error: err }
+          }
+        })(),
         supabase
           .from('activity_logs')
           .select('*')
@@ -163,6 +174,8 @@ export default function Dashboard() {
           .eq('id', userId)
           .single(),
       ])
+      
+      console.log('✅ Promise.all completed, processing results...')
 
       // Procesează profilul
       if (profileResult.data) {
