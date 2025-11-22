@@ -177,17 +177,35 @@ export default function Dashboard() {
           .eq('user_id', userId)
       ])
 
-      // Procesează creditele
+      // Procesează creditele - LOGGING DETALIAT PENTRU DEBUGGING
       const { data: creditsData, error: creditsError } = creditsResult
       
-      if (!creditsError && creditsData !== null && creditsData !== undefined && typeof creditsData === 'number') {
-        // Folosește valoarea din funcția SQL
-        setCurrentCredits(creditsData)
-        console.log('Credits from RPC:', creditsData)
-      } else {
-        // Fallback: calculează creditele corect din tranzacții
-        // Credite = (purchase completed) - (usage completed)
+      console.log('Credits RPC result:', { 
+        data: creditsData, 
+        error: creditsError,
+        dataType: typeof creditsData,
+        isNull: creditsData === null,
+        isUndefined: creditsData === undefined
+      })
+      
+      if (!creditsError && creditsData !== null && creditsData !== undefined) {
+        // Verifică dacă este număr sau alt tip
+        const creditsValue = typeof creditsData === 'number' ? creditsData : Number(creditsData)
+        if (!isNaN(creditsValue)) {
+          setCurrentCredits(creditsValue)
+          console.log('✅ Credits set from RPC:', creditsValue)
+        } else {
+          console.warn('⚠️ RPC returned non-numeric value, using fallback')
+          // Fallback la calcul din tranzacții
+        }
+      }
+      
+      // Fallback: calculează creditele corect din tranzacții (dacă RPC eșuează sau returnează invalid)
+      if (creditsError || creditsData === null || creditsData === undefined || 
+          (typeof creditsData !== 'number' && isNaN(Number(creditsData)))) {
+        console.log('Using fallback: calculating credits from transactions')
         const { data: transactionsData } = transactionsResult
+        
         if (transactionsData && transactionsData.length > 0) {
           const purchases = transactionsData
             .filter(t => t.type === 'purchase' && t.status === 'completed')
@@ -198,11 +216,17 @@ export default function Dashboard() {
             .reduce((sum, t) => sum + Math.abs(t.amount || 0), 0)
           
           const calculatedCredits = purchases - usages
-          setCurrentCredits(Math.max(0, calculatedCredits)) // Nu permite credite negative
-          console.log('Calculated credits from transactions:', { purchases, usages, total: calculatedCredits })
+          const finalCredits = Math.max(0, calculatedCredits) // Nu permite credite negative
+          setCurrentCredits(finalCredits)
+          console.log('✅ Calculated credits from transactions:', { 
+            purchases, 
+            usages, 
+            total: finalCredits,
+            transactionsCount: transactionsData.length
+          })
         } else {
           setCurrentCredits(0)
-          console.log('No transactions found, credits set to 0')
+          console.log('⚠️ No transactions found, credits set to 0')
         }
       }
 
@@ -314,8 +338,25 @@ export default function Dashboard() {
           }
         }, 5000)
 
-        // Verifică sesiunea din localStorage
+        // IMPORTANT: Verifică dacă suntem în browser (localStorage nu există pe server)
+        if (typeof window === 'undefined') {
+          console.log('Server-side render - skipping session check')
+          if (mounted) {
+            setLoading(false)
+            setUser(null)
+          }
+          return
+        }
+
+        // Verifică sesiunea din localStorage (doar în browser)
         const { data: { session }, error } = await supabase.auth.getSession()
+        
+        console.log('Session check result:', {
+          hasSession: !!session,
+          hasUser: !!session?.user,
+          userId: session?.user?.id,
+          error: error?.message
+        })
         
         if (error) {
           console.error('Error getting session:', error)
@@ -329,12 +370,14 @@ export default function Dashboard() {
         if (mounted) {
           if (session?.user) {
             // Utilizator autentificat
+            console.log('✅ User authenticated:', session.user.id)
             setUser(session.user)
             setLoading(false)
             // Încarcă datele
             await loadUserProfileAndData(session.user.id)
           } else {
             // Nu există sesiune
+            console.log('❌ No session found')
             setUser(null)
             setLoading(false)
           }
@@ -561,8 +604,16 @@ export default function Dashboard() {
     }
   }
 
+  // IMPORTANT: Pe server-side (SSR), nu avem acces la localStorage
+  // Așteptăm până când componenta este montată pe client
+  const [isClient, setIsClient] = useState(false)
+  
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   // Afișează formularul de autentificare dacă nu e autentificat
-  if (loading) {
+  if (!isClient || loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <motion.div

@@ -8,14 +8,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Creează client Supabase cu persistență automată a sesiunii
-// Supabase folosește automat localStorage în browser pentru a salva sesiunea
+// IMPORTANT: localStorage funcționează doar în browser, nu pe server
+// Supabase gestionează automat acest lucru, dar trebuie să ne asigurăm că funcționează corect
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    // Nu specificăm storage - Supabase folosește automat localStorage
-    // Storage key-ul este generat automat bazat pe URL-ul proiectului
+    // Supabase folosește automat localStorage în browser
+    // Pe server (SSR), va returna null pentru sesiune, dar va funcționa corect pe client
   }
 })
 
