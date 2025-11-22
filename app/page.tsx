@@ -964,16 +964,16 @@ export default function Home() {
                   <div key={duplicateIndex} className="flex gap-6 flex-shrink-0">
                     {/* Array cu 10 imagini */}
                     {[
-                      'GALERIE-1.JPG',
-                      'GALERIE-2.JPG',
-                      'GALERIE-3.JPG',
-                      'GALERIE-4.JPG',
-                      'GALERIE-5.JPG',
-                      'GALERIE-6.JPG',
-                      'GALERIE-7.JPG',
-                      'GALERIE-8.JPG',
-                      'GALERIE-9.JPG',
-                      'GALERIE-10.JPG',
+                      'galerie-1.jpg',
+                      'galerie-2.jpg',
+                      'galerie-3.jpg',
+                      'galerie-4.jpg',
+                      'galerie-5.jpg',
+                      'galerie-6.jpg',
+                      'galerie-7.jpg',
+                      'galerie-8.jpg',
+                      'galerie-9.jpg',
+                      'galerie-10.jpg',
                     ].map((imageName, index) => (
                       <motion.div
                         key={`${duplicateIndex}-${index}`}
