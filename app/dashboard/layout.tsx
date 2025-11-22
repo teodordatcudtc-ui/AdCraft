@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import '../globals.css'
 
 export const metadata: Metadata = {
   title: 'Dashboard - AdCraft AI',
@@ -11,12 +10,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <html lang="ro">
-      <body className="bg-[#0a0a0f] text-white">
-        {children}
-      </body>
-    </html>
-  )
+  // Dashboard layout nu mai include html/body - folosește root layout
+  return <>{children}</>
 }
 

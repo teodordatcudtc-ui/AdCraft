@@ -275,6 +275,7 @@ export default function Dashboard() {
           }
         }, 5000)
 
+        // Verifică sesiunea - încearcă mai întâi din storage, apoi din server
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
@@ -284,6 +285,12 @@ export default function Dashboard() {
           }
           return
         }
+
+        console.log('Session check:', { 
+          hasSession: !!session, 
+          hasUser: !!session?.user,
+          userId: session?.user?.id 
+        })
 
         if (mounted) {
           setUser(session?.user ?? null)

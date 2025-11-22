@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
+import ConditionalLayout from '@/components/ConditionalLayout'
 
 export const metadata: Metadata = {
   title: 'AdCraft AI - AI-Powered Ad Generation',
@@ -16,9 +15,9 @@ export default function RootLayout({
   return (
     <html lang="ro">
       <body>
-        <Header />
-        {children}
-        <Footer />
+        <ConditionalLayout>
+          {children}
+        </ConditionalLayout>
       </body>
     </html>
   )
