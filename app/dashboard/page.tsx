@@ -421,7 +421,6 @@ export default function Dashboard() {
           setTotalGenerations(0)
           setSuccessfulGenerations(0)
           setFailedGenerations(0)
-          hasLoadedData = false
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           // Token reîmprospătat - reîncarcă datele
           console.log('🔄 Token refreshed, reloading data...')
