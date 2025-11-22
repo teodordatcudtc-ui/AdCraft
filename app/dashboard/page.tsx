@@ -292,18 +292,16 @@ export default function Dashboard() {
     { id: 'profil' as Section, label: 'Profil', icon: UserIcon },
   ]
 
-  // Verifică sesiunea și încarcă profilul - VERSIUNE SIMPLIFICATĂ ȘI FUNCȚIONALĂ
+  // Verifică sesiunea și încarcă profilul - VERSIUNE CORECTATĂ PENTRU REFRESH
   useEffect(() => {
     let mounted = true
     let subscription: { unsubscribe: () => void } | null = null
     let loadingTimeout: NodeJS.Timeout | null = null
-    let hasLoadedData = false
 
     const loadUserProfileAndData = async (userId: string) => {
-      if (hasLoadedData) return // Evită încărcări duplicate
-      hasLoadedData = true
-
       try {
+        console.log('🔄 Loading user profile and data for:', userId)
+        
         // Încarcă profilul și datele în paralel
         const [profileResult] = await Promise.all([
           supabase
@@ -317,26 +315,26 @@ export default function Dashboard() {
           setUserProfile(profileResult.data)
         }
 
-        // Încarcă datele utilizatorului
+        // IMPORTANT: Încarcă datele utilizatorului (fără flag care blochează)
         if (mounted) {
+          console.log('📊 Loading user data...')
           await loadUserData(userId)
+          console.log('✅ User data loaded')
         }
       } catch (error) {
-        console.error('Error loading profile and data:', error)
-      } finally {
-        hasLoadedData = false
+        console.error('❌ Error loading profile and data:', error)
       }
     }
 
     const checkSession = async () => {
       try {
-        // Timeout de siguranță
+        // Timeout de siguranță - mărit la 10 secunde pentru Vercel
         loadingTimeout = setTimeout(() => {
           if (mounted) {
-            console.warn('Loading timeout - forcing loading to stop')
+            console.warn('⏱️ Loading timeout - forcing loading to stop')
             setLoading(false)
           }
-        }, 5000)
+        }, 10000) // 10 secunde pentru Vercel (mai lent)
 
         // IMPORTANT: Verifică dacă suntem în browser (localStorage nu există pe server)
         if (typeof window === 'undefined') {
@@ -373,7 +371,7 @@ export default function Dashboard() {
             console.log('✅ User authenticated:', session.user.id)
             setUser(session.user)
             setLoading(false)
-            // Încarcă datele
+            // IMPORTANT: Încarcă datele după fiecare refresh
             await loadUserProfileAndData(session.user.id)
           } else {
             // Nu există sesiune
@@ -407,9 +405,9 @@ export default function Dashboard() {
 
         if (event === 'SIGNED_IN' && session?.user) {
           // Utilizator s-a logat
+          console.log('✅ User signed in:', session.user.id)
           setUser(session.user)
           setLoading(false)
-          hasLoadedData = false // Reset pentru a permite încărcare
           await loadUserProfileAndData(session.user.id)
         } else if (event === 'SIGNED_OUT') {
           // Utilizator s-a deconectat
@@ -426,8 +424,8 @@ export default function Dashboard() {
           hasLoadedData = false
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           // Token reîmprospătat - reîncarcă datele
+          console.log('🔄 Token refreshed, reloading data...')
           setUser(session.user)
-          hasLoadedData = false
           await loadUserProfileAndData(session.user.id)
         }
       }
