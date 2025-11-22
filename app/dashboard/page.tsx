@@ -152,22 +152,52 @@ export default function Dashboard() {
     loadUserDataRef.current[userId] = true
 
     try {
-      // Încarcă creditele folosind funcția SQL
-      const { data: creditsData, error: creditsError } = await supabase
-        .rpc('get_user_credits', { user_uuid: userId })
-        
-      if (!creditsError && creditsData !== null) {
+      // OPTIMIZARE: Încarcă toate datele în paralel pentru viteză maximă
+      const [creditsResult, transactionsResult, logsResult, generationsResult] = await Promise.all([
+        // 1. Încearcă să încarce creditele folosind funcția SQL
+        supabase.rpc('get_user_credits', { user_uuid: userId }),
+        // 2. Încarcă tranzacțiile (folosim pentru calcul credite ca fallback)
+        supabase
+          .from('credit_transactions')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(50),
+        // 3. Încarcă logs
+        supabase
+          .from('activity_logs')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(50),
+        // 4. Încarcă statistici generări
+        supabase
+          .from('generations')
+          .select('id, status')
+          .eq('user_id', userId)
+      ])
+
+      // Procesează creditele
+      const { data: creditsData, error: creditsError } = creditsResult
+      
+      if (!creditsError && creditsData !== null && creditsData !== undefined) {
         setCurrentCredits(creditsData || 0)
+      } else {
+        // Fallback: calculează creditele direct din tranzacții
+        const { data: transactionsData } = transactionsResult
+        if (transactionsData) {
+          const calculatedCredits = transactionsData
+            .filter(t => t.status === 'completed')
+            .reduce((sum, t) => sum + (t.amount || 0), 0)
+          setCurrentCredits(calculatedCredits)
+          console.log('Calculated credits from transactions:', calculatedCredits)
+        } else {
+          setCurrentCredits(0)
+        }
       }
 
-      // Încarcă tranzacțiile
-      const { data: transactionsData, error: transactionsError } = await supabase
-        .from('credit_transactions')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(50)
-
+      // Procesează tranzacțiile
+      const { data: transactionsData, error: transactionsError } = transactionsResult
       if (!transactionsError && transactionsData) {
         const formattedTransactions: CreditTransaction[] = transactionsData.map(t => ({
           id: t.id,
@@ -192,14 +222,8 @@ export default function Dashboard() {
         setTotalSpent(spent)
       }
 
-      // Încarcă logs
-      const { data: logsData, error: logsError } = await supabase
-        .from('activity_logs')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(50)
-
+      // Procesează logs
+      const { data: logsData, error: logsError } = logsResult
       if (!logsError && logsData) {
         const formattedLogs: LogEntry[] = logsData.map(log => ({
           id: log.id,
@@ -211,12 +235,8 @@ export default function Dashboard() {
         setLogs(formattedLogs)
       }
 
-      // Încarcă statistici generări
-      const { data: generationsData, error: generationsError } = await supabase
-        .from('generations')
-        .select('id, status')
-        .eq('user_id', userId)
-
+      // Procesează statistici generări
+      const { data: generationsData, error: generationsError } = generationsResult
       if (!generationsError && generationsData) {
         setTotalGenerations(generationsData.length)
         setSuccessfulGenerations(generationsData.filter(g => g.status === 'completed').length)
@@ -225,10 +245,8 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Error loading user data:', error)
     } finally {
-      // Eliberează lock-ul după un mic delay pentru a preveni race conditions
-      setTimeout(() => {
-        delete loadUserDataRef.current[userId]
-      }, 1000)
+      // Eliberează lock-ul imediat după terminare
+      delete loadUserDataRef.current[userId]
     }
   }
 
@@ -249,13 +267,13 @@ export default function Dashboard() {
 
     const checkSession = async () => {
       try {
-        // Timeout de siguranță - oprește loading după 10 secunde
+        // Timeout de siguranță - oprește loading după 5 secunde (optimizat)
         loadingTimeout = setTimeout(() => {
           if (mounted) {
             console.warn('Loading timeout - forcing loading to stop')
             setLoading(false)
           }
-        }, 10000)
+        }, 5000)
 
         const { data: { session }, error } = await supabase.auth.getSession()
         
