@@ -170,9 +170,20 @@ export default function Dashboard() {
       }
 
       // Procesează creditele - PRIORITATE: tranzacții (mai sigur)
-      const { data: transactionsData } = transactionsResult
+      const { data: transactionsData, error: transactionsError } = transactionsResult
+      const { data: creditsData, error: creditsError } = creditsResult
+      
+      console.log('💰 Processing credits:', {
+        transactionsCount: transactionsData?.length || 0,
+        transactionsError: transactionsError ? String(transactionsError) : null,
+        rpcData: creditsData,
+        rpcError: creditsError ? String(creditsError) : null,
+        rpcDataType: typeof creditsData,
+      })
       
       if (transactionsData && transactionsData.length > 0) {
+        console.log('📊 Transactions found:', transactionsData.length)
+        
         // Calculează creditele din tranzacții (metodă sigură)
         const purchases = transactionsData
           .filter(t => t.type === 'purchase' && t.status === 'completed')
@@ -185,8 +196,14 @@ export default function Dashboard() {
         const calculatedCredits = purchases - usages
         const finalCredits = Math.max(0, calculatedCredits)
         
+        console.log('💳 Credit calculation:', {
+          purchases,
+          usages,
+          calculatedCredits,
+          finalCredits,
+        })
+        
         // Verifică dacă RPC-ul a returnat o valoare validă
-        const { data: creditsData, error: creditsError } = creditsResult
         if (!creditsError && creditsData !== null && creditsData !== undefined) {
           const rpcCredits = typeof creditsData === 'number' ? creditsData : Number(creditsData)
           if (!isNaN(rpcCredits) && rpcCredits >= 0) {
@@ -196,12 +213,14 @@ export default function Dashboard() {
           } else {
             // Fallback la calcul
             setCurrentCredits(finalCredits)
-            console.log('✅ Credits calculated from transactions:', finalCredits)
+            console.log('✅ Credits calculated from transactions (RPC invalid):', finalCredits)
           }
         } else {
           // Fallback la calcul
           setCurrentCredits(finalCredits)
-          console.log('✅ Credits calculated from transactions (RPC failed):', finalCredits)
+          console.log('✅ Credits calculated from transactions (RPC failed):', finalCredits, {
+            error: creditsError ? String(creditsError) : null,
+          })
         }
 
         // Formatează tranzacțiile
@@ -228,7 +247,7 @@ export default function Dashboard() {
         setTotalSpent(spent)
       } else {
         // Nu există tranzacții - verifică RPC
-        const { data: creditsData, error: creditsError } = creditsResult
+        console.log('⚠️ No transactions found, checking RPC...')
         if (!creditsError && creditsData !== null && creditsData !== undefined) {
           const rpcCredits = typeof creditsData === 'number' ? creditsData : Number(creditsData)
           if (!isNaN(rpcCredits) && rpcCredits >= 0) {
@@ -236,11 +255,14 @@ export default function Dashboard() {
             console.log('✅ Credits from RPC (no transactions):', rpcCredits)
           } else {
             setCurrentCredits(0)
-            console.log('⚠️ No valid credits data')
+            console.log('⚠️ RPC returned invalid value:', creditsData)
           }
         } else {
           setCurrentCredits(0)
-          console.log('⚠️ No transactions and RPC failed')
+          console.log('⚠️ No transactions and RPC failed:', {
+            error: creditsError ? String(creditsError) : null,
+            data: creditsData,
+          })
         }
         setTransactions([])
         setTotalEarned(0)
