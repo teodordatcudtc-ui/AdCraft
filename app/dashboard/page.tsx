@@ -275,11 +275,16 @@ export default function Dashboard() {
           }
         }, 5000)
 
-        // Verifică sesiunea - încearcă mai întâi din storage, apoi din server
+        // Verifică sesiunea - Supabase verifică automat localStorage
+        // getSession() citește din localStorage și validează token-ul
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
           console.error('Error getting session:', error)
+          // Dacă e eroare, încercă să șterge sesiunea coruptă
+          if (error.message?.includes('Invalid') || error.message?.includes('expired')) {
+            await supabase.auth.signOut()
+          }
           if (mounted) {
             setLoading(false)
           }
@@ -289,7 +294,8 @@ export default function Dashboard() {
         console.log('Session check:', { 
           hasSession: !!session, 
           hasUser: !!session?.user,
-          userId: session?.user?.id 
+          userId: session?.user?.id,
+          expiresAt: session?.expires_at 
         })
 
         if (mounted) {
@@ -321,6 +327,12 @@ export default function Dashboard() {
             } finally {
               isLoadingData = false
             }
+          } else if (!session?.user) {
+            // Nu există sesiune - verifică dacă există în localStorage (pentru debugging)
+            if (typeof window !== 'undefined') {
+              const stored = localStorage.getItem(`sb-${supabaseUrl.split('//')[1]?.split('.')[0]}-auth-token`)
+              console.log('No session found, localStorage check:', { hasStored: !!stored })
+            }
           }
         }
       } catch (error) {
@@ -337,13 +349,20 @@ export default function Dashboard() {
 
     checkSession()
 
-    // Ascultă schimbările de autentificare (doar o dată)
+    // Ascultă schimbările de autentificare
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return
 
-        // Evită loop-uri infinite - procesează doar evenimente relevante și doar o dată
-        if ((event === 'SIGNED_OUT' || event === 'SIGNED_IN') && !isLoadingData) {
+        console.log('Auth state changed:', event, { hasSession: !!session, hasUser: !!session?.user })
+
+        // Procesează toate evenimentele relevante
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+          if (isLoadingData) {
+            // Dacă deja se încarcă date, ignoră evenimentul pentru a evita duplicate
+            return
+          }
+          
           isLoadingData = true
           
           try {
@@ -358,8 +377,8 @@ export default function Dashboard() {
             
               if (mounted) {
                 setUserProfile(profile)
-                // Reîncarcă datele când se schimbă sesiunea (doar pentru SIGNED_IN)
-                if (event === 'SIGNED_IN') {
+                // Reîncarcă datele când se schimbă sesiunea
+                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                   await loadUserData(session.user.id)
                 }
               }
@@ -380,7 +399,10 @@ export default function Dashboard() {
           } catch (error) {
             console.error('Error in auth state change:', error)
           } finally {
-            isLoadingData = false
+            // Eliberează lock-ul după un mic delay pentru a evita race conditions
+            setTimeout(() => {
+              isLoadingData = false
+            }, 100)
           }
         }
       }
