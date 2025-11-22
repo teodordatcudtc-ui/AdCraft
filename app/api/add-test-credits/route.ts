@@ -27,11 +27,30 @@ export async function POST(request: NextRequest) {
     // Verifică dacă service role key este setat
     if (!supabaseServiceKey) {
       console.error('SUPABASE_SERVICE_ROLE_KEY is not set in environment variables')
+      console.error('Available env vars:', {
+        hasUrl: !!supabaseUrl,
+        hasAnonKey: !!supabaseAnonKey,
+        hasServiceKey: !!supabaseServiceKey
+      })
       return NextResponse.json(
         { 
           error: 'Server configuration error', 
           details: 'Service role key is not configured. Please set SUPABASE_SERVICE_ROLE_KEY in your environment variables.',
-          hint: 'Get your service role key from Supabase Dashboard → Settings → API'
+          hint: 'Get your service role key from Supabase Dashboard → Settings → API → Secret keys. Make sure to add it in Vercel Dashboard → Settings → Environment Variables for Production environment.',
+          troubleshooting: 'If you are on Vercel, make sure SUPABASE_SERVICE_ROLE_KEY is added in Vercel Dashboard → Settings → Environment Variables → Production'
+        },
+        { status: 500 }
+      )
+    }
+
+    // Verifică formatul cheii
+    if (!supabaseServiceKey.startsWith('sb_secret_')) {
+      console.error('Invalid service role key format. Should start with sb_secret_')
+      return NextResponse.json(
+        { 
+          error: 'Invalid API key format', 
+          details: 'Service role key should start with "sb_secret_". Make sure you copied the correct key from Supabase Dashboard → Settings → API → Secret keys (not Publishable key).',
+          hint: 'The key should look like: sb_secret_xxxxxxxxxxxxx'
         },
         { status: 500 }
       )

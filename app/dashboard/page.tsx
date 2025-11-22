@@ -227,68 +227,103 @@ export default function Dashboard() {
 
   // Verifică sesiunea și încarcă profilul
   useEffect(() => {
+    let mounted = true
+    let subscription: { unsubscribe: () => void } | null = null
+
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
-        setUser(session?.user ?? null)
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('Error getting session:', error)
+          if (mounted) {
+            setLoading(false)
+          }
+          return
+        }
 
-        if (session?.user) {
-          // Încarcă profilul utilizatorului
-          const { data: profile } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
+        if (mounted) {
+          setUser(session?.user ?? null)
 
-          setUserProfile(profile)
-          
-          // Încarcă datele utilizatorului
-          await loadUserData(session.user.id)
+          if (session?.user) {
+            // Încarcă profilul utilizatorului
+            const { data: profile, error: profileError } = await supabase
+              .from('user_profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
+
+            if (profileError) {
+              console.error('Error loading profile:', profileError)
+            }
+
+            if (mounted) {
+              setUserProfile(profile)
+              
+              // Încarcă datele utilizatorului
+              await loadUserData(session.user.id)
+            }
+          }
         }
       } catch (error) {
         console.error('Error checking session:', error)
       } finally {
-        setLoading(false)
+        if (mounted) {
+          setLoading(false)
+        }
       }
     }
 
     checkSession()
 
-    // Ascultă schimbările de autentificare
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    // Ascultă schimbările de autentificare (doar o dată)
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null)
-        
-        if (session?.user) {
-          const { data: profile } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
+        if (!mounted) return
+
+        // Evită loop-uri infinite - procesează doar evenimente relevante
+        if (event === 'SIGNED_OUT' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          setUser(session?.user ?? null)
           
-          setUserProfile(profile)
+          if (session?.user) {
+            const { data: profile } = await supabase
+              .from('user_profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
           
-          // Reîncarcă datele când se schimbă sesiunea
-          await loadUserData(session.user.id)
-        } else {
-          setUserProfile(null)
-          // Resetează datele când user-ul se deconectează
-          setLogs([])
-          setTransactions([])
-          setCurrentCredits(0)
-          setTotalSpent(0)
-          setTotalEarned(0)
-          setTotalGenerations(0)
-          setSuccessfulGenerations(0)
-          setFailedGenerations(0)
+            if (mounted) {
+              setUserProfile(profile)
+              // Reîncarcă datele când se schimbă sesiunea
+              await loadUserData(session.user.id)
+            }
+          } else {
+            if (mounted) {
+              setUserProfile(null)
+              // Resetează datele când user-ul se deconectează
+              setLogs([])
+              setTransactions([])
+              setCurrentCredits(0)
+              setTotalSpent(0)
+              setTotalEarned(0)
+              setTotalGenerations(0)
+              setSuccessfulGenerations(0)
+              setFailedGenerations(0)
+            }
+          }
         }
       }
     )
 
+    subscription = authSubscription
+
     return () => {
-      subscription.unsubscribe()
+      mounted = false
+      if (subscription) {
+        subscription.unsubscribe()
+      }
     }
-  }, [])
+  }, []) // Empty deps - rulează doar o dată la mount
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
