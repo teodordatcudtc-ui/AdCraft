@@ -1,3 +1,39 @@
+# Troubleshooting - Erori Comune
+
+## Eroare: "Missing Supabase environment variables" la Deploy pe Vercel
+
+### Cauză:
+Variabilele de mediu Supabase nu sunt configurate în Vercel Dashboard.
+
+### Soluție Rapidă:
+
+1. **Mergi la Vercel Dashboard**
+   - Accesează [https://vercel.com/dashboard](https://vercel.com/dashboard)
+   - Selectează proiectul tău
+
+2. **Adaugă Variabilele de Mediu**
+   - Mergi la **Settings** → **Environment Variables**
+   - Adaugă următoarele variabile:
+
+   ```
+   NEXT_PUBLIC_SUPABASE_URL = https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY = sb_publishable_...
+   SUPABASE_SERVICE_ROLE_KEY = sb_secret_... (opțional)
+   N8N_WEBHOOK_URL = https://your-n8n-instance.com/webhook/... (dacă folosești)
+   ```
+
+3. **Important:**
+   - Selectează **Production, Preview, Development** pentru fiecare variabilă
+   - Fă **Redeploy** după adăugarea variabilelor
+
+4. **Verifică:**
+   - Build-ul ar trebui să reușească
+   - Aplicația ar trebui să funcționeze corect
+
+**Vezi ghidul complet:** `docs/VERCEL-DEPLOY.md`
+
+---
+
 # Troubleshooting - Erori Comune n8n
 
 ## Eroare: "source.on is not a function" la nodul HTTP Request

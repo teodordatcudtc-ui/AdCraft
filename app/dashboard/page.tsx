@@ -296,6 +296,43 @@ export default function Dashboard() {
     setUserProfile(null)
   }
 
+  const handleAddTestCredits = async () => {
+    if (!user) return
+
+    try {
+      // Obține token-ul de autentificare
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        alert('Nu ești autentificat!')
+        return
+      }
+
+      const response = await fetch('/api/add-test-credits', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Eroare la adăugarea creditelor')
+      }
+
+      // Reîncarcă datele utilizatorului
+      if (user) {
+        await loadUserData(user.id)
+      }
+
+      alert('10 credite au fost adăugate cu succes!')
+    } catch (error) {
+      console.error('Error adding test credits:', error)
+      alert(error instanceof Error ? error.message : 'Eroare la adăugarea creditelor')
+    }
+  }
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -314,6 +351,13 @@ export default function Dashboard() {
     setGeneratedImageError(null)
     
     try {
+      // Verifică dacă utilizatorul are suficiente credite
+      if (currentCredits < IMAGE_GENERATION_COST) {
+        setGeneratedImageError(`Nu ai suficiente credite! Ai nevoie de ${IMAGE_GENERATION_COST} credite, dar ai doar ${currentCredits}. Te rugăm să adaugi credite pentru a continua.`)
+        setIsLoading(false)
+        return
+      }
+
       // Convertim imaginea în base64 dacă există
       let imageBase64 = null
       if (image) {
@@ -515,6 +559,13 @@ export default function Dashboard() {
               <p className="text-xs text-gray-400 truncate">{user.email}</p>
             </div>
           </div>
+          <button
+            onClick={handleAddTestCredits}
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-400 hover:text-green-300 hover:bg-green-500/30 transition-all mb-2"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="font-medium">+10 Credite (Test)</span>
+          </button>
           <button
             onClick={handleLogout}
             className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all"
