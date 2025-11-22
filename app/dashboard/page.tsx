@@ -180,19 +180,29 @@ export default function Dashboard() {
       // Procesează creditele
       const { data: creditsData, error: creditsError } = creditsResult
       
-      if (!creditsError && creditsData !== null && creditsData !== undefined) {
-        setCurrentCredits(creditsData || 0)
+      if (!creditsError && creditsData !== null && creditsData !== undefined && typeof creditsData === 'number') {
+        // Folosește valoarea din funcția SQL
+        setCurrentCredits(creditsData)
+        console.log('Credits from RPC:', creditsData)
       } else {
-        // Fallback: calculează creditele direct din tranzacții
+        // Fallback: calculează creditele corect din tranzacții
+        // Credite = (purchase completed) - (usage completed)
         const { data: transactionsData } = transactionsResult
-        if (transactionsData) {
-          const calculatedCredits = transactionsData
-            .filter(t => t.status === 'completed')
-            .reduce((sum, t) => sum + (t.amount || 0), 0)
-          setCurrentCredits(calculatedCredits)
-          console.log('Calculated credits from transactions:', calculatedCredits)
+        if (transactionsData && transactionsData.length > 0) {
+          const purchases = transactionsData
+            .filter(t => t.type === 'purchase' && t.status === 'completed')
+            .reduce((sum, t) => sum + Math.abs(t.amount || 0), 0)
+          
+          const usages = transactionsData
+            .filter(t => t.type === 'usage' && t.status === 'completed')
+            .reduce((sum, t) => sum + Math.abs(t.amount || 0), 0)
+          
+          const calculatedCredits = purchases - usages
+          setCurrentCredits(Math.max(0, calculatedCredits)) // Nu permite credite negative
+          console.log('Calculated credits from transactions:', { purchases, usages, total: calculatedCredits })
         } else {
           setCurrentCredits(0)
+          console.log('No transactions found, credits set to 0')
         }
       }
 
@@ -258,16 +268,45 @@ export default function Dashboard() {
     { id: 'profil' as Section, label: 'Profil', icon: UserIcon },
   ]
 
-  // Verifică sesiunea și încarcă profilul
+  // Verifică sesiunea și încarcă profilul - VERSIUNE SIMPLIFICATĂ ȘI FUNCȚIONALĂ
   useEffect(() => {
     let mounted = true
     let subscription: { unsubscribe: () => void } | null = null
     let loadingTimeout: NodeJS.Timeout | null = null
-    let isLoadingData = false
+    let hasLoadedData = false
+
+    const loadUserProfileAndData = async (userId: string) => {
+      if (hasLoadedData) return // Evită încărcări duplicate
+      hasLoadedData = true
+
+      try {
+        // Încarcă profilul și datele în paralel
+        const [profileResult] = await Promise.all([
+          supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('id', userId)
+            .single(),
+        ])
+
+        if (mounted && profileResult.data) {
+          setUserProfile(profileResult.data)
+        }
+
+        // Încarcă datele utilizatorului
+        if (mounted) {
+          await loadUserData(userId)
+        }
+      } catch (error) {
+        console.error('Error loading profile and data:', error)
+      } finally {
+        hasLoadedData = false
+      }
+    }
 
     const checkSession = async () => {
       try {
-        // Timeout de siguranță - oprește loading după 5 secunde (optimizat)
+        // Timeout de siguranță
         loadingTimeout = setTimeout(() => {
           if (mounted) {
             console.warn('Loading timeout - forcing loading to stop')
@@ -275,75 +314,45 @@ export default function Dashboard() {
           }
         }, 5000)
 
-        // Verifică sesiunea - Supabase verifică automat localStorage
-        // getSession() citește din localStorage și validează token-ul
+        // Verifică sesiunea din localStorage
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
           console.error('Error getting session:', error)
-          // Dacă e eroare, încercă să șterge sesiunea coruptă
-          if (error.message?.includes('Invalid') || error.message?.includes('expired')) {
-            await supabase.auth.signOut()
-          }
           if (mounted) {
             setLoading(false)
+            setUser(null)
           }
           return
         }
 
-        console.log('Session check:', { 
-          hasSession: !!session, 
-          hasUser: !!session?.user,
-          userId: session?.user?.id,
-          expiresAt: session?.expires_at 
-        })
-
         if (mounted) {
-          setUser(session?.user ?? null)
-
-          if (session?.user && !isLoadingData) {
-            isLoadingData = true
-            
-            try {
-              // Încarcă profilul utilizatorului
-              const { data: profile, error: profileError } = await supabase
-                .from('user_profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single()
-
-              if (profileError) {
-                console.error('Error loading profile:', profileError)
-              }
-
-              if (mounted) {
-                setUserProfile(profile)
-                
-                // Încarcă datele utilizatorului (doar o dată)
-                await loadUserData(session.user.id)
-              }
-            } catch (loadError) {
-              console.error('Error loading user data:', loadError)
-            } finally {
-              isLoadingData = false
-            }
-          } else if (!session?.user) {
-            // Nu există sesiune - utilizatorul trebuie să se logheze
-            console.log('No session found - user needs to log in')
+          if (session?.user) {
+            // Utilizator autentificat
+            setUser(session.user)
+            setLoading(false)
+            // Încarcă datele
+            await loadUserProfileAndData(session.user.id)
+          } else {
+            // Nu există sesiune
+            setUser(null)
+            setLoading(false)
           }
         }
       } catch (error) {
         console.error('Error checking session:', error)
+        if (mounted) {
+          setLoading(false)
+          setUser(null)
+        }
       } finally {
         if (loadingTimeout) {
           clearTimeout(loadingTimeout)
         }
-        if (mounted) {
-          setLoading(false)
-        }
       }
     }
 
+    // Verifică sesiunea la mount
     checkSession()
 
     // Ascultă schimbările de autentificare
@@ -351,56 +360,32 @@ export default function Dashboard() {
       async (event, session) => {
         if (!mounted) return
 
-        console.log('Auth state changed:', event, { hasSession: !!session, hasUser: !!session?.user })
+        console.log('Auth state changed:', event)
 
-        // Procesează toate evenimentele relevante
-        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
-          if (isLoadingData) {
-            // Dacă deja se încarcă date, ignoră evenimentul pentru a evita duplicate
-            return
-          }
-          
-          isLoadingData = true
-          
-          try {
-            setUser(session?.user ?? null)
-            
-            if (session?.user) {
-              const { data: profile } = await supabase
-                .from('user_profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single()
-            
-              if (mounted) {
-                setUserProfile(profile)
-                // Reîncarcă datele când se schimbă sesiunea
-                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-                  await loadUserData(session.user.id)
-                }
-              }
-            } else {
-              if (mounted) {
-                setUserProfile(null)
-                // Resetează datele când user-ul se deconectează
-                setLogs([])
-                setTransactions([])
-                setCurrentCredits(0)
-                setTotalSpent(0)
-                setTotalEarned(0)
-                setTotalGenerations(0)
-                setSuccessfulGenerations(0)
-                setFailedGenerations(0)
-              }
-            }
-          } catch (error) {
-            console.error('Error in auth state change:', error)
-          } finally {
-            // Eliberează lock-ul după un mic delay pentru a evita race conditions
-            setTimeout(() => {
-              isLoadingData = false
-            }, 100)
-          }
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Utilizator s-a logat
+          setUser(session.user)
+          setLoading(false)
+          hasLoadedData = false // Reset pentru a permite încărcare
+          await loadUserProfileAndData(session.user.id)
+        } else if (event === 'SIGNED_OUT') {
+          // Utilizator s-a deconectat
+          setUser(null)
+          setUserProfile(null)
+          setLogs([])
+          setTransactions([])
+          setCurrentCredits(0)
+          setTotalSpent(0)
+          setTotalEarned(0)
+          setTotalGenerations(0)
+          setSuccessfulGenerations(0)
+          setFailedGenerations(0)
+          hasLoadedData = false
+        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+          // Token reîmprospătat - reîncarcă datele
+          setUser(session.user)
+          hasLoadedData = false
+          await loadUserProfileAndData(session.user.id)
         }
       }
     )
