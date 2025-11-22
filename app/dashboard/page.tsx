@@ -350,47 +350,78 @@ export default function Dashboard() {
 
       subscription = authSubscription
 
-      // ABORDARE NOUĂ: Citește direct token-ul JWT din localStorage și decodifică-l
+      // ABORDARE NOUĂ: Citește direct sesiunea JSON din localStorage Supabase
       try {
         const allKeys = Object.keys(localStorage)
         const supabaseKeys = allKeys.filter(key => 
-          (key.includes('supabase') || key.includes('sb-')) && key.includes('auth-token')
+          (key.includes('supabase') || key.includes('sb-')) && (key.includes('auth-token') || key.includes('auth'))
         )
         
         console.log('📦 Checking Supabase storage keys:', supabaseKeys.length)
 
-        let foundUser: { id: string; email?: string } | null = null
+        let foundUser: User | null = null
 
-        // Caută token-ul în storage
+        // Caută sesiunea în storage - Supabase o stochează ca JSON stringified
         for (const key of supabaseKeys) {
           try {
             const value = localStorage.getItem(key)
             if (value && value.length > 50) {
-              console.log('🔑 Found token in storage:', key.substring(0, 40) + '...')
+              console.log('🔑 Found data in storage:', key.substring(0, 40) + '...')
               
-              // Încearcă să decodifici token-ul JWT
+              // Încearcă să parsezi ca JSON (Supabase stochează sesiunea ca JSON)
               try {
-                const tokenParts = value.split('.')
-                if (tokenParts.length === 3) {
-                  // Decodifică payload-ul JWT (partea a doua)
-                  const payload = JSON.parse(atob(tokenParts[1]))
-                  
-                  // Verifică dacă token-ul nu este expirat
-                  const now = Math.floor(Date.now() / 1000)
-                  if (payload.exp && payload.exp > now) {
-                    // Token valid - extrage user ID
-                    if (payload.sub) {
-                      foundUser = { id: payload.sub, email: payload.email }
-                      console.log('✅ Valid token found, user ID:', payload.sub)
+                const parsed = JSON.parse(value)
+                
+                // Verifică dacă este un obiect de sesiune Supabase
+                if (parsed && typeof parsed === 'object') {
+                  // Poate fi: { access_token, refresh_token, expires_at, user, ... }
+                  if (parsed.user && parsed.user.id) {
+                    // Verifică dacă token-ul nu este expirat
+                    const now = Math.floor(Date.now() / 1000)
+                    const expiresAt = parsed.expires_at || parsed.expiresAt
+                    
+                    if (!expiresAt || expiresAt > now) {
+                      foundUser = parsed.user as User
+                      console.log('✅ Valid session found in storage, user ID:', parsed.user.id)
                       break
+                    } else {
+                      console.log('⚠️ Session expired')
                     }
-                  } else {
-                    console.log('⚠️ Token expired')
+                  }
+                  
+                  // Sau poate fi direct user object
+                  if (parsed.id && !foundUser) {
+                    foundUser = parsed as User
+                    console.log('✅ User found directly in storage, ID:', parsed.id)
+                    break
                   }
                 }
-              } catch (decodeError) {
-                // Nu este JWT, continuă căutarea
-                console.log('⚠️ Not a JWT token, trying different approach...')
+              } catch (jsonError) {
+                // Nu este JSON, încearcă să decodifici ca JWT
+                try {
+                  const tokenParts = value.split('.')
+                  if (tokenParts.length === 3) {
+                    const payload = JSON.parse(atob(tokenParts[1]))
+                    const now = Math.floor(Date.now() / 1000)
+                    if (payload.exp && payload.exp > now && payload.sub) {
+                      // Creează user object din JWT payload
+                      foundUser = {
+                        id: payload.sub,
+                        email: payload.email,
+                        aud: payload.aud || 'authenticated',
+                        role: payload.role || 'authenticated',
+                        created_at: new Date(payload.iat * 1000).toISOString(),
+                        app_metadata: payload.app_metadata || {},
+                        user_metadata: payload.user_metadata || {},
+                      } as User
+                      console.log('✅ Valid JWT token found, user ID:', payload.sub)
+                      break
+                    }
+                  }
+                } catch (jwtError) {
+                  // Nu este nici JWT, continuă
+                  console.log('⚠️ Not JSON or JWT, skipping...')
+                }
               }
             }
           } catch (e) {
@@ -398,48 +429,39 @@ export default function Dashboard() {
           }
         }
 
-        // Dacă am găsit user ID din token, folosește-l direct
+        // Dacă am găsit user din storage, folosește-l direct
         if (foundUser) {
-          console.log('✅ Using user from token:', foundUser.id)
+          console.log('✅ Using user from storage:', foundUser.id)
           clearTimeout(timeoutId!)
-          
-          // Creează un obiect User minimal din token
-          const userFromToken: User = {
-            id: foundUser.id,
-            email: foundUser.email || undefined,
-            // Alte câmpuri necesare pentru User type
-            aud: 'authenticated',
-            role: 'authenticated',
-            created_at: new Date().toISOString(),
-            app_metadata: {},
-            user_metadata: {},
-          } as User
-
-          setUser(userFromToken)
+          setUser(foundUser)
           setLoading(false)
           sessionCheckedRef.current = false
           await loadUserData(foundUser.id)
           return
         }
 
-        // Dacă nu am găsit token valid, încearcă getUser() care poate funcționa diferit
+        // Dacă nu am găsit în storage, încearcă getUser() cu timeout scurt
         console.log('🔄 Trying getUser() as fallback...')
         try {
-          const { data: { user: currentUser }, error } = await Promise.race([
-            supabase.auth.getUser(),
-            new Promise<{ data: { user: null }, error: { message: 'timeout' } }>((resolve) => 
-              setTimeout(() => resolve({ data: { user: null }, error: { message: 'timeout' } }), 1500)
-            )
-          ]) as { data: { user: any }, error: any }
+          const getUserPromise = supabase.auth.getUser()
+          const timeoutPromise = new Promise<{ data: { user: null }, error: { message: 'timeout' } }>((resolve) => 
+            setTimeout(() => resolve({ data: { user: null }, error: { message: 'timeout' } }), 1500)
+          )
 
-          if (currentUser && !error) {
-            console.log('✅ User from getUser():', currentUser.id)
+          const result = await Promise.race([getUserPromise, timeoutPromise]) as { data: { user: any }, error: any }
+
+          if (result.data?.user && !result.error) {
+            console.log('✅ User from getUser():', result.data.user.id)
             clearTimeout(timeoutId!)
-            setUser(currentUser)
+            setUser(result.data.user)
             setLoading(false)
             sessionCheckedRef.current = false
-            await loadUserData(currentUser.id)
+            await loadUserData(result.data.user.id)
             return
+          } else if (result.error && result.error.message !== 'timeout') {
+            console.warn('⚠️ getUser() error:', result.error)
+          } else {
+            console.warn('⏱️ getUser() timed out')
           }
         } catch (getUserError) {
           console.warn('⚠️ getUser() failed:', getUserError)
