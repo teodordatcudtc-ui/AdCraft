@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import Auth from '@/components/Auth'
@@ -139,13 +139,23 @@ export default function Dashboard() {
     numInferenceSteps: 20,
   })
 
-  // Funcție pentru încărcarea datelor reale
+  // Funcție pentru încărcarea datelor reale (cu protecție împotriva apelurilor multiple)
+  const loadUserDataRef = useRef<{ [key: string]: boolean }>({})
+  
   const loadUserData = async (userId: string) => {
+    // Previne apelurile multiple simultane pentru același user
+    if (loadUserDataRef.current[userId]) {
+      console.log('loadUserData already in progress for user:', userId)
+      return
+    }
+
+    loadUserDataRef.current[userId] = true
+
     try {
       // Încarcă creditele folosind funcția SQL
       const { data: creditsData, error: creditsError } = await supabase
         .rpc('get_user_credits', { user_uuid: userId })
-      
+        
       if (!creditsError && creditsData !== null) {
         setCurrentCredits(creditsData || 0)
       }
@@ -214,6 +224,11 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('Error loading user data:', error)
+    } finally {
+      // Eliberează lock-ul după un mic delay pentru a preveni race conditions
+      setTimeout(() => {
+        delete loadUserDataRef.current[userId]
+      }, 1000)
     }
   }
 
@@ -229,9 +244,19 @@ export default function Dashboard() {
   useEffect(() => {
     let mounted = true
     let subscription: { unsubscribe: () => void } | null = null
+    let loadingTimeout: NodeJS.Timeout | null = null
+    let isLoadingData = false
 
     const checkSession = async () => {
       try {
+        // Timeout de siguranță - oprește loading după 10 secunde
+        loadingTimeout = setTimeout(() => {
+          if (mounted) {
+            console.warn('Loading timeout - forcing loading to stop')
+            setLoading(false)
+          }
+        }, 10000)
+
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
@@ -245,29 +270,40 @@ export default function Dashboard() {
         if (mounted) {
           setUser(session?.user ?? null)
 
-          if (session?.user) {
-            // Încarcă profilul utilizatorului
-            const { data: profile, error: profileError } = await supabase
-              .from('user_profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single()
+          if (session?.user && !isLoadingData) {
+            isLoadingData = true
+            
+            try {
+              // Încarcă profilul utilizatorului
+              const { data: profile, error: profileError } = await supabase
+                .from('user_profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single()
 
-            if (profileError) {
-              console.error('Error loading profile:', profileError)
-            }
+              if (profileError) {
+                console.error('Error loading profile:', profileError)
+              }
 
-            if (mounted) {
-              setUserProfile(profile)
-              
-              // Încarcă datele utilizatorului
-              await loadUserData(session.user.id)
+              if (mounted) {
+                setUserProfile(profile)
+                
+                // Încarcă datele utilizatorului (doar o dată)
+                await loadUserData(session.user.id)
+              }
+            } catch (loadError) {
+              console.error('Error loading user data:', loadError)
+            } finally {
+              isLoadingData = false
             }
           }
         }
       } catch (error) {
         console.error('Error checking session:', error)
       } finally {
+        if (loadingTimeout) {
+          clearTimeout(loadingTimeout)
+        }
         if (mounted) {
           setLoading(false)
         }
@@ -281,35 +317,45 @@ export default function Dashboard() {
       async (event, session) => {
         if (!mounted) return
 
-        // Evită loop-uri infinite - procesează doar evenimente relevante
-        if (event === 'SIGNED_OUT' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          setUser(session?.user ?? null)
+        // Evită loop-uri infinite - procesează doar evenimente relevante și doar o dată
+        if ((event === 'SIGNED_OUT' || event === 'SIGNED_IN') && !isLoadingData) {
+          isLoadingData = true
           
-          if (session?.user) {
-            const { data: profile } = await supabase
-              .from('user_profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single()
-          
-            if (mounted) {
-              setUserProfile(profile)
-              // Reîncarcă datele când se schimbă sesiunea
-              await loadUserData(session.user.id)
+          try {
+            setUser(session?.user ?? null)
+            
+            if (session?.user) {
+              const { data: profile } = await supabase
+                .from('user_profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single()
+            
+              if (mounted) {
+                setUserProfile(profile)
+                // Reîncarcă datele când se schimbă sesiunea (doar pentru SIGNED_IN)
+                if (event === 'SIGNED_IN') {
+                  await loadUserData(session.user.id)
+                }
+              }
+            } else {
+              if (mounted) {
+                setUserProfile(null)
+                // Resetează datele când user-ul se deconectează
+                setLogs([])
+                setTransactions([])
+                setCurrentCredits(0)
+                setTotalSpent(0)
+                setTotalEarned(0)
+                setTotalGenerations(0)
+                setSuccessfulGenerations(0)
+                setFailedGenerations(0)
+              }
             }
-          } else {
-            if (mounted) {
-              setUserProfile(null)
-              // Resetează datele când user-ul se deconectează
-              setLogs([])
-              setTransactions([])
-              setCurrentCredits(0)
-              setTotalSpent(0)
-              setTotalEarned(0)
-              setTotalGenerations(0)
-              setSuccessfulGenerations(0)
-              setFailedGenerations(0)
-            }
+          } catch (error) {
+            console.error('Error in auth state change:', error)
+          } finally {
+            isLoadingData = false
           }
         }
       }
@@ -319,6 +365,9 @@ export default function Dashboard() {
 
     return () => {
       mounted = false
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout)
+      }
       if (subscription) {
         subscription.unsubscribe()
       }
