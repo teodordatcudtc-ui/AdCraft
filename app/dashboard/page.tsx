@@ -282,19 +282,17 @@ export default function Dashboard() {
     { id: 'profil' as Section, label: 'Profil', icon: UserIcon },
   ]
 
-  // VERIFICARE SESIUNE - ABORDARE FINALĂ: Verificare directă storage Supabase
+  // VERIFICARE SESIUNE - ABORDARE FINALĂ: Citire directă token JWT din localStorage
   useEffect(() => {
     let mounted = true
     let subscription: { unsubscribe: () => void } | null = null
     let timeoutId: NodeJS.Timeout | null = null
-    let sessionHandled = false
 
     // Timeout de siguranță - oprește loading după 3 secunde
     timeoutId = setTimeout(() => {
-      if (mounted && loading && !sessionHandled) {
+      if (mounted && loading) {
         console.warn('⏱️ Loading timeout - forcing stop')
         setLoading(false)
-        sessionHandled = true
       }
     }, 3000)
 
@@ -324,21 +322,16 @@ export default function Dashboard() {
             userId: session?.user?.id 
           })
 
-          // Procesează toate evenimentele care indică o sesiune validă
           if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-            if (!sessionHandled || user?.id !== session.user.id) {
-              console.log('✅ Session detected via event:', session.user.id)
-              clearTimeout(timeoutId!)
-              sessionHandled = true
-              setUser(session.user)
-              setLoading(false)
-              sessionCheckedRef.current = false
-              await loadUserData(session.user.id)
-            }
+            console.log('✅ Session detected via event:', session.user.id)
+            clearTimeout(timeoutId!)
+            setUser(session.user)
+            setLoading(false)
+            sessionCheckedRef.current = false
+            await loadUserData(session.user.id)
           } else if (event === 'SIGNED_OUT') {
             console.log('👋 User signed out')
             clearTimeout(timeoutId!)
-            sessionHandled = true
             setUser(null)
             setUserProfile(null)
             setLogs([])
@@ -357,81 +350,111 @@ export default function Dashboard() {
 
       subscription = authSubscription
 
-      // Verifică direct storage-ul Supabase pentru sesiune
+      // ABORDARE NOUĂ: Citește direct token-ul JWT din localStorage și decodifică-l
       try {
-        // Supabase stochează sesiunea în localStorage cu cheia specifică
-        const supabaseStorageKey = `sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token`
         const allKeys = Object.keys(localStorage)
         const supabaseKeys = allKeys.filter(key => 
-          key.includes('supabase') || key.includes('sb-') || key.includes('auth')
+          (key.includes('supabase') || key.includes('sb-')) && key.includes('auth-token')
         )
         
         console.log('📦 Checking Supabase storage keys:', supabaseKeys.length)
 
-        // Încearcă să citească direct din storage
-        let foundSession = false
+        let foundUser: { id: string; email?: string } | null = null
+
+        // Caută token-ul în storage
         for (const key of supabaseKeys) {
           try {
             const value = localStorage.getItem(key)
             if (value && value.length > 50) {
-              // Pare a fi un token/sesiune
-              foundSession = true
-              console.log('🔑 Found potential session in storage:', key.substring(0, 30) + '...')
-              break
+              console.log('🔑 Found token in storage:', key.substring(0, 40) + '...')
+              
+              // Încearcă să decodifici token-ul JWT
+              try {
+                const tokenParts = value.split('.')
+                if (tokenParts.length === 3) {
+                  // Decodifică payload-ul JWT (partea a doua)
+                  const payload = JSON.parse(atob(tokenParts[1]))
+                  
+                  // Verifică dacă token-ul nu este expirat
+                  const now = Math.floor(Date.now() / 1000)
+                  if (payload.exp && payload.exp > now) {
+                    // Token valid - extrage user ID
+                    if (payload.sub) {
+                      foundUser = { id: payload.sub, email: payload.email }
+                      console.log('✅ Valid token found, user ID:', payload.sub)
+                      break
+                    }
+                  } else {
+                    console.log('⚠️ Token expired')
+                  }
+                }
+              } catch (decodeError) {
+                // Nu este JWT, continuă căutarea
+                console.log('⚠️ Not a JWT token, trying different approach...')
+              }
             }
           } catch (e) {
-            // Ignoră erorile de citire
+            // Ignoră erorile
           }
         }
 
-        // Dacă am găsit ceva în storage, încearcă getSession cu timeout scurt
-        if (foundSession) {
-          console.log('🔄 Attempting getSession() with timeout...')
-          
-          // Folosește Promise.race pentru a nu bloca
-          const sessionPromise = supabase.auth.getSession()
-          const timeoutPromise = new Promise<null>((resolve) => 
-            setTimeout(() => resolve(null), 2000)
-          )
-
-          const result = await Promise.race([sessionPromise, timeoutPromise])
-          
-          if (result && 'data' in result) {
-            const { data: { session }, error } = result as { data: { session: any }, error: any }
-            
-            if (session?.user) {
-              console.log('✅ Session from getSession():', session.user.id)
-              clearTimeout(timeoutId!)
-              sessionHandled = true
-              setUser(session.user)
-              setLoading(false)
-              sessionCheckedRef.current = false
-              await loadUserData(session.user.id)
-              return
-            } else if (error) {
-              console.warn('⚠️ getSession() error:', error)
-            }
-          } else {
-            console.warn('⏱️ getSession() timed out')
-          }
-        }
-
-        // Dacă nu am găsit sesiune, oprește loading
-        if (!sessionHandled) {
-          console.log('❌ No session found')
+        // Dacă am găsit user ID din token, folosește-l direct
+        if (foundUser) {
+          console.log('✅ Using user from token:', foundUser.id)
           clearTimeout(timeoutId!)
-          sessionHandled = true
-          setUser(null)
+          
+          // Creează un obiect User minimal din token
+          const userFromToken: User = {
+            id: foundUser.id,
+            email: foundUser.email || undefined,
+            // Alte câmpuri necesare pentru User type
+            aud: 'authenticated',
+            role: 'authenticated',
+            created_at: new Date().toISOString(),
+            app_metadata: {},
+            user_metadata: {},
+          } as User
+
+          setUser(userFromToken)
           setLoading(false)
+          sessionCheckedRef.current = false
+          await loadUserData(foundUser.id)
+          return
         }
+
+        // Dacă nu am găsit token valid, încearcă getUser() care poate funcționa diferit
+        console.log('🔄 Trying getUser() as fallback...')
+        try {
+          const { data: { user: currentUser }, error } = await Promise.race([
+            supabase.auth.getUser(),
+            new Promise<{ data: { user: null }, error: { message: 'timeout' } }>((resolve) => 
+              setTimeout(() => resolve({ data: { user: null }, error: { message: 'timeout' } }), 1500)
+            )
+          ]) as { data: { user: any }, error: any }
+
+          if (currentUser && !error) {
+            console.log('✅ User from getUser():', currentUser.id)
+            clearTimeout(timeoutId!)
+            setUser(currentUser)
+            setLoading(false)
+            sessionCheckedRef.current = false
+            await loadUserData(currentUser.id)
+            return
+          }
+        } catch (getUserError) {
+          console.warn('⚠️ getUser() failed:', getUserError)
+        }
+
+        // Dacă nu am găsit nimic, oprește loading
+        console.log('❌ No valid session found')
+        clearTimeout(timeoutId!)
+        setUser(null)
+        setLoading(false)
       } catch (error) {
         console.error('❌ Error checking session:', error)
-        if (!sessionHandled) {
-          clearTimeout(timeoutId!)
-          sessionHandled = true
-          setUser(null)
-          setLoading(false)
-        }
+        clearTimeout(timeoutId!)
+        setUser(null)
+        setLoading(false)
       }
     }
 
