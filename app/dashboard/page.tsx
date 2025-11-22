@@ -328,11 +328,8 @@ export default function Dashboard() {
               isLoadingData = false
             }
           } else if (!session?.user) {
-            // Nu există sesiune - verifică dacă există în localStorage (pentru debugging)
-            if (typeof window !== 'undefined') {
-              const stored = localStorage.getItem(`sb-${supabaseUrl.split('//')[1]?.split('.')[0]}-auth-token`)
-              console.log('No session found, localStorage check:', { hasStored: !!stored })
-            }
+            // Nu există sesiune - utilizatorul trebuie să se logheze
+            console.log('No session found - user needs to log in')
           }
         }
       } catch (error) {
