@@ -300,25 +300,23 @@ export default function Dashboard() {
     if (!user) return
 
     try {
-      // Obține token-ul de autentificare
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        alert('Nu ești autentificat!')
-        return
-      }
-
+      // Trimite user_id direct (utilizatorul este deja autentificat)
       const response = await fetch('/api/add-test-credits', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
+        body: JSON.stringify({
+          user_id: user.id
+        }),
       })
 
       const result = await response.json()
+      console.log('API response:', result)
 
       if (!response.ok) {
-        throw new Error(result.error || 'Eroare la adăugarea creditelor')
+        console.error('API error response:', result)
+        throw new Error(result.error || result.details || 'Eroare la adăugarea creditelor')
       }
 
       // Reîncarcă datele utilizatorului
