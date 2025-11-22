@@ -70,11 +70,22 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
         // Sesiunea este salvată automat în localStorage de către Supabase
         setSuccess('Autentificare reușită!')
         
-        // Așteaptă puțin pentru a ne asigura că sesiunea este salvată
-        await new Promise(resolve => setTimeout(resolve, 300))
+        // IMPORTANT: Așteaptă mai mult pentru a ne asigura că sesiunea este salvată corect
+        // Pe Vercel, localStorage poate avea întârzieri
+        await new Promise(resolve => setTimeout(resolve, 800))
         
-        // Redirect către dashboard - sesiunea este deja salvată
-        window.location.href = '/dashboard'
+        // Verifică că sesiunea este salvată înainte de redirect
+        const { data: { session: verifySession } } = await supabase.auth.getSession()
+        if (verifySession) {
+          console.log('✅ Session verified before redirect')
+          window.location.href = '/dashboard'
+        } else {
+          console.warn('⚠️ Session not saved yet, retrying...')
+          // Reîncearcă după un delay
+          setTimeout(() => {
+            window.location.href = '/dashboard'
+          }, 500)
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Eroare la autentificare')
