@@ -282,21 +282,23 @@ export default function Dashboard() {
     { id: 'profil' as Section, label: 'Profil', icon: UserIcon },
   ]
 
-  // VERIFICARE SESIUNE - ABORDARE FINALĂ: DOAR onAuthStateChange (NU localStorage)
+  // VERIFICARE SESIUNE - ABORDARE FINALĂ: Verificare directă storage Supabase
   useEffect(() => {
     let mounted = true
     let subscription: { unsubscribe: () => void } | null = null
     let timeoutId: NodeJS.Timeout | null = null
+    let sessionHandled = false
 
-    // Timeout de siguranță - oprește loading după 4 secunde
+    // Timeout de siguranță - oprește loading după 3 secunde
     timeoutId = setTimeout(() => {
-      if (mounted && loading) {
+      if (mounted && loading && !sessionHandled) {
         console.warn('⏱️ Loading timeout - forcing stop')
         setLoading(false)
+        sessionHandled = true
       }
-    }, 4000)
+    }, 3000)
 
-    const initializeAuth = () => {
+    const initializeAuth = async () => {
       // Așteaptă până când suntem în browser
       if (typeof window === 'undefined') {
         setLoading(false)
@@ -311,8 +313,7 @@ export default function Dashboard() {
 
       console.log('🔍 Initializing auth...')
 
-      // IMPORTANT: Configurează onAuthStateChange PRIMUL
-      // Acesta va declanșa automat pentru sesiunea existentă (chiar dacă localStorage pare gol)
+      // Configurează onAuthStateChange pentru evenimente viitoare
       const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
           if (!mounted) return
@@ -324,16 +325,20 @@ export default function Dashboard() {
           })
 
           // Procesează toate evenimentele care indică o sesiune validă
-          if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
-            console.log('✅ Session detected via onAuthStateChange:', session.user.id)
-            clearTimeout(timeoutId!)
-            setUser(session.user)
-            setLoading(false)
-            sessionCheckedRef.current = false
-            await loadUserData(session.user.id)
+          if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+            if (!sessionHandled || user?.id !== session.user.id) {
+              console.log('✅ Session detected via event:', session.user.id)
+              clearTimeout(timeoutId!)
+              sessionHandled = true
+              setUser(session.user)
+              setLoading(false)
+              sessionCheckedRef.current = false
+              await loadUserData(session.user.id)
+            }
           } else if (event === 'SIGNED_OUT') {
             console.log('👋 User signed out')
             clearTimeout(timeoutId!)
+            sessionHandled = true
             setUser(null)
             setUserProfile(null)
             setLogs([])
@@ -352,44 +357,82 @@ export default function Dashboard() {
 
       subscription = authSubscription
 
-      // Încearcă getSession() - dar NU ne bazăm pe el
-      // onAuthStateChange va gestiona automat sesiunea
-      console.log('🔄 Attempting getSession() (non-blocking)...')
-      supabase.auth.getSession()
-        .then(({ data: { session }, error }) => {
-          if (!mounted) return
-          
-          if (error) {
-            console.warn('⚠️ getSession() error (ignoring, onAuthStateChange will handle):', error)
-            return
-          }
+      // Verifică direct storage-ul Supabase pentru sesiune
+      try {
+        // Supabase stochează sesiunea în localStorage cu cheia specifică
+        const supabaseStorageKey = `sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token`
+        const allKeys = Object.keys(localStorage)
+        const supabaseKeys = allKeys.filter(key => 
+          key.includes('supabase') || key.includes('sb-') || key.includes('auth')
+        )
+        
+        console.log('📦 Checking Supabase storage keys:', supabaseKeys.length)
 
-          if (session?.user) {
-            console.log('✅ Session from getSession():', session.user.id)
-            // Verifică dacă user-ul nu este deja setat (pentru a evita duplicate)
-            if (!user) {
+        // Încearcă să citească direct din storage
+        let foundSession = false
+        for (const key of supabaseKeys) {
+          try {
+            const value = localStorage.getItem(key)
+            if (value && value.length > 50) {
+              // Pare a fi un token/sesiune
+              foundSession = true
+              console.log('🔑 Found potential session in storage:', key.substring(0, 30) + '...')
+              break
+            }
+          } catch (e) {
+            // Ignoră erorile de citire
+          }
+        }
+
+        // Dacă am găsit ceva în storage, încearcă getSession cu timeout scurt
+        if (foundSession) {
+          console.log('🔄 Attempting getSession() with timeout...')
+          
+          // Folosește Promise.race pentru a nu bloca
+          const sessionPromise = supabase.auth.getSession()
+          const timeoutPromise = new Promise<null>((resolve) => 
+            setTimeout(() => resolve(null), 2000)
+          )
+
+          const result = await Promise.race([sessionPromise, timeoutPromise])
+          
+          if (result && 'data' in result) {
+            const { data: { session }, error } = result as { data: { session: any }, error: any }
+            
+            if (session?.user) {
+              console.log('✅ Session from getSession():', session.user.id)
+              clearTimeout(timeoutId!)
+              sessionHandled = true
               setUser(session.user)
               setLoading(false)
-              loadUserData(session.user.id)
+              sessionCheckedRef.current = false
+              await loadUserData(session.user.id)
+              return
+            } else if (error) {
+              console.warn('⚠️ getSession() error:', error)
             }
-            clearTimeout(timeoutId!)
           } else {
-            console.log('ℹ️ No session from getSession() - waiting for onAuthStateChange...')
-            // Nu setăm loading false aici - lasă onAuthStateChange să gestioneze
-            // Dacă onAuthStateChange nu declanșează în 2 secunde, oprește loading
-            setTimeout(() => {
-              if (mounted && loading && !user) {
-                console.log('⏱️ No session detected - stopping loading')
-                setLoading(false)
-              }
-            }, 2000)
+            console.warn('⏱️ getSession() timed out')
           }
-        })
-        .catch((err) => {
-          if (!mounted) return
-          console.warn('⚠️ getSession() failed (ignoring, onAuthStateChange will handle):', err)
-          // Lasă onAuthStateChange să gestioneze complet
-        })
+        }
+
+        // Dacă nu am găsit sesiune, oprește loading
+        if (!sessionHandled) {
+          console.log('❌ No session found')
+          clearTimeout(timeoutId!)
+          sessionHandled = true
+          setUser(null)
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error('❌ Error checking session:', error)
+        if (!sessionHandled) {
+          clearTimeout(timeoutId!)
+          sessionHandled = true
+          setUser(null)
+          setLoading(false)
+        }
+      }
     }
 
     // Așteaptă puțin pentru a ne asigura că window este disponibil
