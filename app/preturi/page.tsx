@@ -11,7 +11,7 @@ const pricingPackages = [
     features: [
       '50 credite',
       '~16 generări de text (3 credite)',
-      '~10 generări de imagini (5 credite)',
+      '~8 generări de imagini (6 credite)',
       'Sau combinații personalizate',
       'Suport email',
     ],
@@ -25,7 +25,7 @@ const pricingPackages = [
     features: [
       '120 credite',
       '~40 generări de text (3 credite)',
-      '~24 generări de imagini (5 credite)',
+      '~20 generări de imagini (6 credite)',
       'Sau combinații personalizate',
       'Suport priorititar',
     ],
@@ -40,7 +40,7 @@ const pricingPackages = [
     features: [
       '350 credite',
       '~116 generări de text (3 credite)',
-      '~70 generări de imagini (5 credite)',
+      '~58 generări de imagini (6 credite)',
       'Sau combinații personalizate',
       'Suport dedicat',
     ],
@@ -179,7 +179,7 @@ export default function Preturi() {
             </span>
           </h1>
           <p className="text-xl text-gray-400 leading-relaxed">
-            Alege pachetul de credite perfect pentru nevoile tale. Folosește creditele pentru generare text (3 credite) sau imagini (5 credite).
+            Alege pachetul de credite perfect pentru nevoile tale. Folosește creditele pentru generare text (3 credite) sau imagini (6 credite).
           </p>
         </motion.div>
 
@@ -270,11 +270,11 @@ export default function Preturi() {
             {[
               {
                 q: 'Cum funcționează sistemul de credite?',
-                a: 'Fiecare pachet oferă un număr de credite. Generarea de text costă 3 credite, iar generarea de imagini costă 5 credite. Poți folosi creditele oricând, în orice combinație.',
+                a: 'Fiecare pachet oferă un număr de credite. Generarea de text costă 3 credite, iar generarea de imagini costă 6 credite. Poți folosi creditele oricând, în orice combinație.',
               },
               {
                 q: 'Cât costă fiecare generare?',
-                a: 'Generarea de text (copywriting) costă 3 credite, iar generarea de imagini costă 5 credite. Poți alege să generezi doar text sau doar imagini, sau ambele.',
+                a: 'Generarea de text (copywriting) costă 3 credite, iar generarea de imagini costă 6 credite. Poți alege să generezi doar text sau doar imagini, sau ambele.',
               },
               {
                 q: 'Ce metode de plată acceptați?',

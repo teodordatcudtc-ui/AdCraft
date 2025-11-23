@@ -54,14 +54,39 @@ interface ImageOptions {
   numInferenceSteps: number
 }
 
-const ASPECT_RATIO_PRESETS: Record<AspectRatio, { width: number; height: number }> = {
-  '16:9': { width: 1920, height: 1080 },
-  '9:16': { width: 1080, height: 1920 },
-  '1:1': { width: 1024, height: 1024 },
-  '4:3': { width: 1600, height: 1200 },
+const ASPECT_RATIO_PRESETS: Record<AspectRatio, { width: number; height: number; label: string; description: string; previewClass: string }> = {
+  '16:9': { 
+    width: 1920, 
+    height: 1080, 
+    label: '16:9', 
+    description: 'Landscape (Banner, Desktop)',
+    previewClass: 'w-16 aspect-video'
+  },
+  '9:16': { 
+    width: 1080, 
+    height: 1920, 
+    label: '9:16', 
+    description: 'Portrait (Stories, Mobile)',
+    previewClass: 'w-10 aspect-[9/16] mx-auto'
+  },
+  '1:1': { 
+    width: 1024, 
+    height: 1024, 
+    label: '1:1', 
+    description: 'Square (Instagram, Facebook)',
+    previewClass: 'w-16 aspect-square'
+  },
+  '4:3': { 
+    width: 1600, 
+    height: 1200, 
+    label: '4:3', 
+    description: 'Classic (Print, Presentation)',
+    previewClass: 'w-16 aspect-[4/3]'
+  },
 }
 
-const IMAGE_GENERATION_COST = 5
+const IMAGE_GENERATION_COST = 6
+const TEXT_GENERATION_COST = 3
 
 interface LogEntry {
   id: string
@@ -100,13 +125,18 @@ export default function Dashboard() {
   
   // Modal state pentru generare reclama
   const [isGenerateAdModalOpen, setIsGenerateAdModalOpen] = useState(false)
+  const [isGenerateTextModalOpen, setIsGenerateTextModalOpen] = useState(false)
   const [prompt, setPrompt] = useState('')
+  const [textPrompt, setTextPrompt] = useState('')
   const [image, setImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isTextLoading, setIsTextLoading] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null)
   const [generatedImageError, setGeneratedImageError] = useState<string | null>(null)
+  const [generatedText, setGeneratedText] = useState<string | null>(null)
+  const [generatedTextError, setGeneratedTextError] = useState<string | null>(null)
   const [options, setOptions] = useState<ImageOptions>({
     aspectRatio: '1:1',
     style: 'professional',
@@ -581,6 +611,75 @@ export default function Dashboard() {
     }
   }
 
+  const handleTextSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsTextLoading(true)
+    setGeneratedTextError(null)
+    setGeneratedText(null)
+    
+    try {
+      if (currentCredits < TEXT_GENERATION_COST) {
+        setGeneratedTextError(`Nu ai suficiente credite! Ai nevoie de ${TEXT_GENERATION_COST} credite, dar ai doar ${currentCredits}.`)
+        setIsTextLoading(false)
+        return
+      }
+
+      if (!user) return
+
+      // Generează textul PRIMA dată (fără să deduc creditele)
+      const response = await fetch('/api/generate-ad', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: textPrompt,
+          generateOnlyText: true,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Eroare la generarea textului')
+      }
+
+      // Deduce creditele DOAR dacă generarea a reușit
+      if (result.success && result.data?.text) {
+        // Deduce creditele după succes
+        const deductResponse = await fetch('/api/deduct-credits', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+            credits_amount: TEXT_GENERATION_COST,
+            description: `Generare text publicitar (${TEXT_GENERATION_COST} credite)`,
+          }),
+        })
+
+        if (!deductResponse.ok) {
+          const errorData = await deductResponse.json()
+          throw new Error(errorData.error || 'Eroare la deducerea creditelor')
+        }
+
+        setGeneratedText(result.data.text)
+        // Reîncarcă creditele pentru a reflecta scăderea
+        await loadUserData(user.id)
+      } else {
+        // Dacă generarea a eșuat, nu se deduc credite
+        setGeneratedTextError(result.error || 'Eroare la generarea textului')
+      }
+    } catch (error) {
+      console.error('Error generating text:', error)
+      setGeneratedTextError(error instanceof Error ? error.message : 'Eroare la generarea textului')
+      setGeneratedText(null)
+    } finally {
+      setIsTextLoading(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -592,6 +691,8 @@ export default function Dashboard() {
         setIsLoading(false)
         return
       }
+
+      if (!user) return
 
       let imageBase64 = null
       if (image) {
@@ -609,6 +710,7 @@ export default function Dashboard() {
         })
       }
 
+      // Generează imaginea PRIMA dată (fără să deduc creditele)
       const response = await fetch('/api/generate-ad', {
         method: 'POST',
         headers: {
@@ -636,7 +738,26 @@ export default function Dashboard() {
         throw new Error(result.error || 'Eroare la generarea reclamei')
       }
 
-      if (result.success) {
+      // Deduce creditele DOAR dacă generarea a reușit
+      if (result.success && (result.data?.image_url || result.data?.taskId)) {
+        // Deduce creditele după succes
+        const deductResponse = await fetch('/api/deduct-credits', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+            credits_amount: IMAGE_GENERATION_COST,
+            description: `Generare reclamă cu imagine (${IMAGE_GENERATION_COST} credite)`,
+          }),
+        })
+
+        if (!deductResponse.ok) {
+          const errorData = await deductResponse.json()
+          throw new Error(errorData.error || 'Eroare la deducerea creditelor')
+        }
+
         if (result.data?.image_url) {
           setGeneratedImageUrl(result.data.image_url)
         } else if (result.data?.taskId) {
@@ -644,7 +765,10 @@ export default function Dashboard() {
         } else {
           setGeneratedImageError('Cererea a fost trimisă cu succes.')
         }
+        // Reîncarcă creditele pentru a reflecta scăderea
+        await loadUserData(user.id)
       } else {
+        // Dacă generarea a eșuat, nu se deduc credite
         setGeneratedImageError(result.error || 'Eroare la generarea reclamei')
       }
     } catch (error) {
@@ -890,15 +1014,39 @@ export default function Dashboard() {
                       </div>
                       <div>
                         <h3 className="text-lg font-bold text-white">Generează Reclamă</h3>
-                        <p className="text-sm text-gray-400">5 credite</p>
+                        <p className="text-sm text-gray-400">6 credite</p>
                       </div>
                     </div>
                     <p className="text-sm text-gray-300 mb-4">
-                      Creează reclame optimizate cu AI pentru produsele tale
+                      Creează reclame optimizate cu AI pentru produsele tale (imagine + text)
                     </p>
                     <button 
                       onClick={() => setIsGenerateAdModalOpen(true)}
                       className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all"
+                    >
+                      Deschide Tool
+                    </button>
+                  </motion.div>
+
+                  <motion.div
+                    whileHover={{ y: -4, scale: 1.02 }}
+                    className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 rounded-xl p-6 hover:border-green-500/50 transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center">
+                        <FileEdit className="w-6 h-6 text-green-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-white">Generează Text</h3>
+                        <p className="text-sm text-gray-400">3 credite</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-300 mb-4">
+                      Creează text publicitar profesional cu AI (doar copywriting)
+                    </p>
+                    <button 
+                      onClick={() => setIsGenerateTextModalOpen(true)}
+                      className="w-full px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-lg transition-all"
                     >
                       Deschide Tool
                     </button>
@@ -1080,8 +1228,353 @@ export default function Dashboard() {
         </main>
       </div>
 
-      {/* Generate Ad Modal - Simplified */}
+      {/* Generate Ad Modal - Full Form from Hero */}
       {isGenerateAdModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-gray-900 rounded-xl p-6 max-w-3xl w-full max-h-[95vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Generează Reclamă
+              </h3>
+              <button
+                onClick={() => {
+                  setIsGenerateAdModalOpen(false)
+                  setPrompt('')
+                  setImage(null)
+                  setImagePreview(null)
+                  setGeneratedImageUrl(null)
+                  setGeneratedImageError(null)
+                  setShowAdvanced(false)
+                }}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Prompt Input */}
+              <div className="relative">
+                <label htmlFor="prompt" className="block text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-blue-400" />
+                  Descrie produsul
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="prompt"
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="Ex: ceai organic premium, ambalaj eco-friendly..."
+                    className="relative w-full px-5 py-3.5 bg-gray-800/80 border-2 border-blue-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-400 transition-all text-base font-medium shadow-lg shadow-blue-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Image Upload */}
+              <div className="relative">
+                <label htmlFor="image" className="block text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4 text-purple-400" />
+                  Poza produsului <span className="text-xs text-gray-400 font-normal">(opțional)</span>
+                </label>
+                {imagePreview ? (
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="relative group rounded-lg overflow-hidden border-2 border-purple-500/50 shadow-lg shadow-purple-500/20"
+                  >
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-52 object-cover"
+                    />
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => {
+                        setImage(null)
+                        setImagePreview(null)
+                      }}
+                      className="absolute top-3 right-3 px-4 py-2 bg-red-500/90 hover:bg-red-500 text-white text-sm font-semibold rounded-lg transition-colors shadow-lg"
+                    >
+                      Șterge
+                    </motion.button>
+                  </motion.div>
+                ) : (
+                  <label className="relative flex items-center justify-center w-full h-16 border-2 border-dashed border-purple-500/50 rounded-lg cursor-pointer bg-gray-800/60 hover:bg-gray-800/80 transition-all group shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 hover:border-purple-400">
+                    <div className="flex items-center space-x-3">
+                      <ImageIcon className="w-6 h-6 text-purple-400 group-hover:text-purple-300 transition-colors" />
+                      <p className="text-sm text-gray-300 group-hover:text-white font-medium transition-colors">
+                        <span className="font-semibold">Click pentru a încărca</span> sau drag & drop
+                      </p>
+                    </div>
+                    <input
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
+
+              {/* Advanced Options */}
+              <div className="relative">
+                <motion.button
+                  type="button"
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-800/60 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg transition-all"
+                >
+                  <div className="flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm font-semibold text-white">Opțiuni avansate</span>
+                  </div>
+                  {showAdvanced ? (
+                    <ChevronUp className="w-4 h-4 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  )}
+                </motion.button>
+
+                <AnimatePresence>
+                  {showAdvanced && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      className="overflow-hidden"
+                    >
+                      <div className="mt-4 space-y-4 p-4 bg-gray-800/40 rounded-lg border border-gray-700/30">
+                        {/* Aspect Ratio Presets */}
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-300 mb-3">Aspect Ratio</label>
+                          <div className="grid grid-cols-2 gap-3">
+                            {(Object.keys(ASPECT_RATIO_PRESETS) as AspectRatio[]).map((ratio) => {
+                              const preset = ASPECT_RATIO_PRESETS[ratio]
+                              const isSelected = options.aspectRatio === ratio
+                              return (
+                                <motion.button
+                                  key={ratio}
+                                  type="button"
+                                  onClick={() => setOptions({ ...options, aspectRatio: ratio })}
+                                  whileHover={{ scale: 1.02 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  className={`relative p-4 rounded-lg border-2 transition-all ${
+                                    isSelected
+                                      ? 'border-blue-500 bg-blue-500/20'
+                                      : 'border-gray-700/50 bg-gray-800/60 hover:border-gray-600/50'
+                                  }`}
+                                >
+                                  <div className="mb-3 flex items-center justify-center">
+                                    <div
+                                      className={`${preset.previewClass} ${
+                                        isSelected
+                                          ? 'bg-gradient-to-br from-blue-500/30 to-purple-500/30 border-2 border-blue-400/50'
+                                          : 'bg-gradient-to-br from-gray-700/50 to-gray-800/50 border border-gray-600/50'
+                                      } rounded transition-all shadow-lg`}
+                                    />
+                                  </div>
+                                  <div className="text-center">
+                                    <div className="flex items-center justify-center gap-2 mb-1">
+                                      <span className={`text-sm font-bold ${isSelected ? 'text-blue-400' : 'text-white'}`}>
+                                        {preset.label}
+                                      </span>
+                                      {isSelected && (
+                                        <Check className="w-4 h-4 text-blue-400" />
+                                      )}
+                                    </div>
+                                    <p className="text-xs text-gray-400 mb-1">{preset.description}</p>
+                                    <p className="text-xs text-gray-500">
+                                      {preset.width} × {preset.height}px
+                                    </p>
+                                  </div>
+                                </motion.button>
+                              )
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Style */}
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-300 mb-2">Stil</label>
+                          <select
+                            value={options.style}
+                            onChange={(e) => setOptions({ ...options, style: e.target.value })}
+                            className="w-full px-3 py-2 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50"
+                          >
+                            <option value="professional">Profesional</option>
+                            <option value="artistic">Artistic</option>
+                            <option value="modern">Modern</option>
+                            <option value="vintage">Vintage</option>
+                            <option value="minimalist">Minimalist</option>
+                            <option value="bold">Bold & Colorful</option>
+                          </select>
+                        </div>
+
+                        {/* Negative Prompt */}
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-300 mb-2">Negative Prompt</label>
+                          <input
+                            type="text"
+                            value={options.negativePrompt}
+                            onChange={(e) => setOptions({ ...options, negativePrompt: e.target.value })}
+                            placeholder="blurry, low quality, distorted"
+                            className="w-full px-3 py-2 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50"
+                          />
+                        </div>
+
+                        {/* Guidance Scale */}
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-300 mb-2">
+                            Guidance Scale: {options.guidanceScale}
+                          </label>
+                          <input
+                            type="range"
+                            min="1"
+                            max="20"
+                            step="0.5"
+                            value={options.guidanceScale}
+                            onChange={(e) => setOptions({ ...options, guidanceScale: parseFloat(e.target.value) })}
+                            className="w-full"
+                          />
+                          <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Mai puțin creativ</span>
+                            <span>Mai creativ</span>
+                          </div>
+                        </div>
+
+                        {/* Num Inference Steps */}
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-300 mb-2">
+                            Calitate (Steps): {options.numInferenceSteps}
+                          </label>
+                          <input
+                            type="range"
+                            min="10"
+                            max="50"
+                            step="5"
+                            value={options.numInferenceSteps}
+                            onChange={(e) => setOptions({ ...options, numInferenceSteps: parseInt(e.target.value) })}
+                            className="w-full"
+                          />
+                          <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Rapid</span>
+                            <span>Mai bună calitate</span>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Cost display */}
+              <div className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-300">Cost:</span>
+                  <span className="text-lg font-bold text-purple-400">
+                    {IMAGE_GENERATION_COST} credite
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Generare imagine</p>
+              </div>
+
+              {/* Error Display */}
+              {generatedImageError && (
+                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                  <p className="text-red-400 text-sm">{generatedImageError}</p>
+                </div>
+              )}
+
+              {/* Generated Image Display */}
+              {generatedImageUrl && (
+                <div className="space-y-2">
+                  <div className="relative rounded-lg border-2 border-purple-500/50 shadow-lg overflow-hidden bg-gray-800/50">
+                    <img 
+                      src={`/api/proxy-image?url=${encodeURIComponent(generatedImageUrl)}`}
+                      alt="Generated ad" 
+                      className="w-full h-auto"
+                      onError={(e) => {
+                        console.error('Image load error, trying direct URL:', generatedImageUrl)
+                        // Fallback la URL-ul direct dacă proxy-ul eșuează
+                        const target = e.target as HTMLImageElement
+                        target.src = generatedImageUrl
+                      }}
+                      crossOrigin="anonymous"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => window.open(generatedImageUrl, '_blank')}
+                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg flex items-center justify-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    Descarcă
+                  </button>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <motion.button
+                type="submit"
+                disabled={isLoading || currentCredits < IMAGE_GENERATION_COST || !prompt.trim()}
+                whileHover={{ scale: isLoading ? 1 : 1.02, y: -2 }}
+                whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-500 hover:via-purple-500 hover:to-pink-500 text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl shadow-purple-500/50 flex items-center justify-center space-x-2 relative overflow-hidden group"
+              >
+                {isLoading ? (
+                  <>
+                    <motion.svg
+                      className="animate-spin h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    >
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </motion.svg>
+                    <span>Se generează...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5" />
+                    <span>Generează Reclamă ({IMAGE_GENERATION_COST} credite)</span>
+                  </>
+                )}
+              </motion.button>
+
+              {/* Cancel Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsGenerateAdModalOpen(false)
+                  setPrompt('')
+                  setImage(null)
+                  setImagePreview(null)
+                  setGeneratedImageUrl(null)
+                  setGeneratedImageError(null)
+                  setShowAdvanced(false)
+                }}
+                className="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Anulează
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Generate Text Modal */}
+      {isGenerateTextModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -1089,57 +1582,75 @@ export default function Dashboard() {
             className="bg-gray-900 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-white">Generează Reclamă</h3>
+              <h3 className="text-xl font-bold text-white">Generează Text Publicitar</h3>
               <button
-                onClick={() => setIsGenerateAdModalOpen(false)}
+                onClick={() => {
+                  setIsGenerateTextModalOpen(false)
+                  setTextPrompt('')
+                  setGeneratedText(null)
+                  setGeneratedTextError(null)
+                }}
                 className="text-gray-400 hover:text-white"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleTextSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-300 mb-2">
-                  Descriere Produs
+                  Descriere Produs/Serviciu
                 </label>
                 <textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                  placeholder="Descrie produsul pentru care vrei să generezi o reclamă..."
+                  value={textPrompt}
+                  onChange={(e) => setTextPrompt(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500/30"
+                  placeholder="Descrie produsul sau serviciul pentru care vrei să generezi text publicitar..."
                   rows={4}
                   required
                 />
               </div>
-              {generatedImageError && (
+              {generatedTextError && (
                 <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                  <p className="text-red-400 text-sm">{generatedImageError}</p>
+                  <p className="text-red-400 text-sm">{generatedTextError}</p>
                 </div>
               )}
-              {generatedImageUrl && (
+              {generatedText && (
                 <div className="space-y-2">
-                  <img src={generatedImageUrl} alt="Generated ad" className="w-full rounded-lg" />
+                  <div className="p-4 bg-gray-800/50 border border-gray-700/50 rounded-lg">
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                      Text Generat:
+                    </label>
+                    <p className="text-white whitespace-pre-wrap">{generatedText}</p>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => window.open(generatedImageUrl, '_blank')}
-                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg"
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedText)
+                      alert('Text copiat în clipboard!')
+                    }}
+                    className="w-full px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg"
                   >
                     <Download className="w-4 h-4 inline mr-2" />
-                    Descarcă
+                    Copiază Text
                   </button>
                 </div>
               )}
               <div className="flex space-x-4">
                 <button
                   type="submit"
-                  disabled={isLoading || currentCredits < IMAGE_GENERATION_COST}
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all disabled:opacity-50"
+                  disabled={isTextLoading || currentCredits < TEXT_GENERATION_COST}
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-lg transition-all disabled:opacity-50"
                 >
-                  {isLoading ? 'Se generează...' : `Generează (${IMAGE_GENERATION_COST} credite)`}
+                  {isTextLoading ? 'Se generează...' : `Generează Text (${TEXT_GENERATION_COST} credite)`}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsGenerateAdModalOpen(false)}
+                  onClick={() => {
+                    setIsGenerateTextModalOpen(false)
+                    setTextPrompt('')
+                    setGeneratedText(null)
+                    setGeneratedTextError(null)
+                  }}
                   className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg"
                 >
                   Anulează

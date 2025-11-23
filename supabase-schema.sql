@@ -266,8 +266,8 @@ BEGIN
     INSERT INTO public.user_profiles (id, full_name)
     VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email));
     
-    -- Adaugă credite bonus pentru utilizatorii noi (opțional)
-    -- PERFORM public.add_credits(NEW.id, 10, 'Credite bonus pentru înregistrare');
+    -- Adaugă credite bonus pentru utilizatorii noi
+    PERFORM public.add_credits(NEW.id, 10, 'Credite bonus pentru înregistrare');
     
     RETURN NEW;
 END;
@@ -346,7 +346,7 @@ VALUES
         50,
         10.00,
         'Pachet de bază cu 50 credite',
-        '["50 credite", "~16 generări de text (3 credite)", "~10 generări de imagini (5 credite)", "Sau combinații personalizate", "Suport email"]'::jsonb,
+        '["50 credite", "~16 generări de text (3 credite)", "~8 generări de imagini (6 credite)", "Sau combinații personalizate", "Suport email"]'::jsonb,
         false,
         true
     ),
@@ -355,7 +355,7 @@ VALUES
         120,
         20.00,
         'Pachet popular cu 120 credite',
-        '["120 credite", "~40 generări de text (3 credite)", "~24 generări de imagini (5 credite)", "Sau combinații personalizate", "Suport priorititar"]'::jsonb,
+        '["120 credite", "~40 generări de text (3 credite)", "~20 generări de imagini (6 credite)", "Sau combinații personalizate", "Suport priorititar"]'::jsonb,
         true,
         true
     ),
@@ -364,7 +364,7 @@ VALUES
         350,
         50.00,
         'Pachet premium cu 350 credite',
-        '["350 credite", "~116 generări de text (3 credite)", "~70 generări de imagini (5 credite)", "Sau combinații personalizate", "Suport dedicat"]'::jsonb,
+        '["350 credite", "~116 generări de text (3 credite)", "~58 generări de imagini (6 credite)", "Sau combinații personalizate", "Suport dedicat"]'::jsonb,
         false,
         true
     )

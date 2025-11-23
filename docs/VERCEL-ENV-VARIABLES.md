@@ -39,11 +39,19 @@ Dacă funcționează local (`npm run dev`) dar nu funcționează pe Vercel, prob
 
 ⚠️ **CRITIC**: Această variabilă este cea care lipsește cel mai des și cauzează eroarea 500!
 
-#### Variabila 4: `N8N_WEBHOOK_URL` (dacă folosești n8n)
+#### Variabila 4: `N8N_WEBHOOK_URL` (dacă folosești n8n pentru imagini)
 - **Key**: `N8N_WEBHOOK_URL`
-- **Value**: URL-ul webhook-ului tău n8n
+- **Value**: URL-ul webhook-ului n8n pentru generare imagini (ex: `https://agentie-reclame.app.n8n.cloud/webhook/reclama`)
 - **Environment**: ✅ Production, ✅ Preview, ✅ Development
 - Click **Save**
+
+#### Variabila 5: `N8N_TEXT_WEBHOOK_URL` (dacă folosești n8n pentru text)
+- **Key**: `N8N_TEXT_WEBHOOK_URL`
+- **Value**: URL-ul webhook-ului n8n pentru generare text/copywriting (ex: `https://agentie-reclame.app.n8n.cloud/webhook/generate-text`)
+- **Environment**: ✅ Production, ✅ Preview, ✅ Development
+- Click **Save**
+
+**Notă**: Dacă nu setezi `N8N_TEXT_WEBHOOK_URL`, se va folosi default-ul: `https://agentie-reclame.app.n8n.cloud/webhook/generate-text`
 
 ### Pasul 4: Verifică Variabilele Adăugate
 
@@ -54,6 +62,7 @@ NEXT_PUBLIC_SUPABASE_URL          [Production, Preview, Development]
 NEXT_PUBLIC_SUPABASE_ANON_KEY     [Production, Preview, Development]
 SUPABASE_SERVICE_ROLE_KEY         [Production, Preview, Development]  ← IMPORTANT!
 N8N_WEBHOOK_URL                   [Production, Preview, Development]
+N8N_TEXT_WEBHOOK_URL              [Production, Preview, Development]
 ```
 
 ### Pasul 5: Redeployază
@@ -124,6 +133,8 @@ Service role key is not configured
 - [ ] `NEXT_PUBLIC_SUPABASE_URL` este setat în Vercel
 - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY` este setat în Vercel
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` este setat în Vercel ⚠️
+- [ ] `N8N_WEBHOOK_URL` este setat în Vercel (pentru generare imagini)
+- [ ] `N8N_TEXT_WEBHOOK_URL` este setat în Vercel (pentru generare text)
 - [ ] Toate variabilele sunt bifate pentru **Production**
 - [ ] Ai făcut **Redeploy** după adăugarea variabilelor
 - [ ] Cheia `SUPABASE_SERVICE_ROLE_KEY` începe cu `sb_secret_...`

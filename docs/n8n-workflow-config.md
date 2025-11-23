@@ -533,21 +533,36 @@ return [{
 
 **Tip**: Respond to Webhook
 
-**Pentru success** (format KIE.AI oficial):
+**⚠️ IMPORTANT**: Nu folosi `$('Parse Result')` - referințele la noduri nu funcționează în "Respond to Webhook"!
+
+**Pentru success** (format corect - fără referințe la noduri):
 ```json
-{
-  "success": true,
-  "image_url": "{{ $('Parse Result').item.json.firstImageUrl }}",
-  "image_urls": "{{ $('Parse Result').item.json.imageUrls }}",
-  "taskId": "{{ $('Parse Result').item.json.taskId }}",
-  "state": "{{ $('Parse Result').item.json.state }}"
+={
+  "success": $json.state === "success",
+  "image_url": $json.firstImageUrl,
+  "taskId": $json.taskId,
+  "state": $json.state
 }
 ```
 
+**Configurare**:
+1. **Respond With**: `JSON`
+2. **Response Body**: Selectează **"Using JSON"**
+3. **JSON Body**: Folosește expresiile de mai sus
+
 **IMPORTANT**: 
-- Folosește nodul "Parse Result" pentru a accesa datele parse!
-- `firstImageUrl` este primul URL din array-ul `resultUrls`
+- Folosește `=` la început pentru a activa evaluarea expresiilor
+- NU folosi `{{ }}` - doar `$json.fieldName`
+- NU pune ghilimele în jurul expresiilor
+- `firstImageUrl` este primul URL din array-ul `resultUrls` (parsat în nodul "Parse Result")
 - `imageUrls` este array-ul complet cu toate URL-urile (dacă sunt multiple)
+
+**Alternativă simplă**: Returnează direct JSON-ul:
+```json
+={{ $json }}
+```
+
+**Vezi**: [docs/n8n-image-webhook-fix.md](n8n-image-webhook-fix.md) pentru soluții detaliate.
 
 **Pentru fail**:
 ```json

@@ -65,7 +65,7 @@ export default function Home() {
 
   // Costuri în credite
   const TEXT_GENERATION_COST = 3
-  const IMAGE_GENERATION_COST = 5
+  const IMAGE_GENERATION_COST = 6
   
   // Calculează costul total
   const calculateCost = () => {
@@ -191,7 +191,7 @@ export default function Home() {
       features: [
         '50 credite',
         '~16 generări de text (3 credite)',
-        '~10 generări de imagini (5 credite)',
+        '~8 generări de imagini (6 credite)',
         'Sau combinații personalizate',
         'Suport email',
       ],
@@ -205,7 +205,7 @@ export default function Home() {
       features: [
         '120 credite',
         '~40 generări de text (3 credite)',
-        '~24 generări de imagini (5 credite)',
+        '~20 generări de imagini (6 credite)',
         'Sau combinații personalizate',
         'Suport priorititar',
       ],
@@ -220,7 +220,7 @@ export default function Home() {
       features: [
         '350 credite',
         '~116 generări de text (3 credite)',
-        '~70 generări de imagini (5 credite)',
+        '~58 generări de imagini (6 credite)',
         'Sau combinații personalizate',
         'Suport dedicat',
       ],
@@ -329,9 +329,9 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-green-500/5 to-cyan-500/5" />
       </div>
 
-      <div className="relative z-10 pt-20">
+      <div className="relative z-10 pt-16">
         {/* Hero Section - Two Column Layout */}
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Column - Text */}
             <motion.div
@@ -440,7 +440,7 @@ export default function Home() {
                 }}
               />
 
-              <div className="relative bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-xl border-2 border-transparent rounded-2xl p-6 sm:p-8 shadow-2xl overflow-hidden">
+              <div className="relative bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-xl border-2 border-transparent rounded-2xl p-4 sm:p-6 shadow-2xl overflow-hidden">
                 {/* Animated gradient background */}
                 <motion.div
                   className="absolute inset-0"
@@ -480,20 +480,20 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
                   >
-                    <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    <h2 className="text-2xl font-bold mb-1 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                       Testează Acum
                     </h2>
-                    <p className="text-sm text-gray-400 mb-6">Generează prima ta reclamă în secunde</p>
+                    <p className="text-xs text-gray-400 mb-4">Generează prima ta reclamă în secunde</p>
                   </motion.div>
-                  <form onSubmit={handleSubmit} className="space-y-5">
+                  <form onSubmit={handleSubmit} className="space-y-3">
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 }}
                       className="relative"
                     >
-                      <label htmlFor="prompt" className="block text-sm font-semibold text-white mb-3 flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-blue-400" />
+                      <label htmlFor="prompt" className="block text-xs font-semibold text-white mb-2 flex items-center gap-2">
+                        <Sparkles className="w-3 h-3 text-blue-400" />
                         Descrie produsul
                       </label>
                       <div className="relative">
@@ -507,7 +507,7 @@ export default function Home() {
                           value={prompt}
                           onChange={(e) => setPrompt(e.target.value)}
                           placeholder="Ex: ceai organic premium, ambalaj eco-friendly..."
-                          className="relative w-full px-5 py-3.5 bg-gray-800/80 border-2 border-blue-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-400 transition-all text-base font-medium shadow-lg shadow-blue-500/20"
+                          className="relative w-full px-4 py-2.5 bg-gray-800/80 border-2 border-blue-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-400 transition-all text-sm font-medium shadow-lg shadow-blue-500/20"
                           required
                         />
                       </div>
@@ -520,7 +520,7 @@ export default function Home() {
                       transition={{ delay: 0.35 }}
                       className="relative"
                     >
-                      <label className="flex items-center gap-3 p-4 bg-gray-800/60 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg cursor-pointer transition-all group">
+                      <label className="flex items-center gap-2 p-2.5 bg-gray-800/60 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg cursor-pointer transition-all group">
                         <input
                           type="checkbox"
                           checked={generateOnlyText}
@@ -531,16 +531,11 @@ export default function Home() {
                               setImagePreview(null)
                             }
                           }}
-                          className="w-5 h-5 rounded border-gray-600 bg-gray-700 text-purple-600 focus:ring-purple-500 focus:ring-2"
+                          className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-purple-600 focus:ring-purple-500 focus:ring-2"
                         />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <Sparkles className="w-4 h-4 text-purple-400" />
-                            <span className="text-sm font-semibold text-white">Generează doar text (copywriting)</span>
-                          </div>
-                          <p className="text-xs text-gray-400 mt-1">
-                            Cost: <span className="text-purple-400 font-semibold">{TEXT_GENERATION_COST} credite</span> (vs {IMAGE_GENERATION_COST} credite pentru imagine)
-                          </p>
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-3 h-3 text-purple-400" />
+                          <span className="text-xs font-semibold text-white">Generează doar text (copywriting)</span>
                         </div>
                       </label>
                     </motion.div>
@@ -551,13 +546,13 @@ export default function Home() {
                       transition={{ delay: 0.4 }}
                       className="relative"
                     >
-                      <label htmlFor="image" className="block text-sm font-semibold text-white mb-3 flex items-center gap-2">
-                        <ImageIcon className="w-4 h-4 text-purple-400" />
+                      <label htmlFor="image" className="block text-xs font-semibold text-white mb-2 flex items-center gap-2">
+                        <ImageIcon className="w-3 h-3 text-purple-400" />
                         Poza produsului <span className="text-xs text-gray-400 font-normal">(opțional)</span>
                       </label>
                       {generateOnlyText ? (
-                        <div className="w-full h-16 border-2 border-dashed border-gray-700/50 rounded-lg bg-gray-800/40 flex items-center justify-center">
-                          <p className="text-sm text-gray-500">Generare doar text - imaginea nu este necesară</p>
+                        <div className="w-full h-12 border-2 border-dashed border-gray-700/50 rounded-lg bg-gray-800/40 flex items-center justify-center">
+                          <p className="text-xs text-gray-500">Generare doar text - imaginea nu este necesară</p>
                         </div>
                       ) : imagePreview ? (
                         <motion.div
@@ -568,7 +563,7 @@ export default function Home() {
                           <img
                             src={imagePreview}
                             alt="Preview"
-                            className="w-full h-52 object-cover"
+                            className="w-full h-40 object-cover"
                           />
                           <motion.button
                             type="button"
@@ -584,18 +579,18 @@ export default function Home() {
                           </motion.button>
                         </motion.div>
                       ) : (
-                        <label className="relative flex items-center justify-center w-full h-16 border-2 border-dashed border-purple-500/50 rounded-lg cursor-pointer bg-gray-800/60 hover:bg-gray-800/80 transition-all group shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 hover:border-purple-400">
+                        <label className="relative flex items-center justify-center w-full h-12 border-2 border-dashed border-purple-500/50 rounded-lg cursor-pointer bg-gray-800/60 hover:bg-gray-800/80 transition-all group shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 hover:border-purple-400">
                           <motion.div
                             className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg blur-sm opacity-0 group-hover:opacity-30 transition-opacity"
                           />
-                          <div className="relative flex items-center space-x-3">
+                          <div className="relative flex items-center space-x-2">
                             <motion.div
                               whileHover={{ rotate: 360 }}
                               transition={{ duration: 0.6 }}
                             >
-                              <ImageIcon className="w-6 h-6 text-purple-400 group-hover:text-purple-300 transition-colors" />
+                              <ImageIcon className="w-4 h-4 text-purple-400 group-hover:text-purple-300 transition-colors" />
                             </motion.div>
-                            <p className="text-sm text-gray-300 group-hover:text-white font-medium transition-colors">
+                            <p className="text-xs text-gray-300 group-hover:text-white font-medium transition-colors">
                               <span className="font-semibold">Click pentru a încărca</span> sau drag & drop
                             </p>
                           </div>
@@ -621,16 +616,16 @@ export default function Home() {
                         <motion.button
                           type="button"
                           onClick={() => setShowAdvanced(!showAdvanced)}
-                          className="w-full flex items-center justify-between px-4 py-3 bg-gray-800/60 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg transition-all"
+                          className="w-full flex items-center justify-between px-3 py-2 bg-gray-800/60 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg transition-all"
                         >
                           <div className="flex items-center gap-2">
-                            <Settings className="w-4 h-4 text-gray-400" />
-                            <span className="text-sm font-semibold text-white">Opțiuni avansate</span>
+                            <Settings className="w-3 h-3 text-gray-400" />
+                            <span className="text-xs font-semibold text-white">Opțiuni avansate</span>
                           </div>
                           {showAdvanced ? (
-                            <ChevronUp className="w-4 h-4 text-gray-400" />
+                            <ChevronUp className="w-3 h-3 text-gray-400" />
                           ) : (
-                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                            <ChevronDown className="w-3 h-3 text-gray-400" />
                           )}
                         </motion.button>
 
@@ -769,33 +764,12 @@ export default function Home() {
                     </motion.div>
                     )}
 
-                    {/* Cost display */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.6 }}
-                      className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-300">Cost:</span>
-                        <span className="text-lg font-bold text-purple-400">
-                          {calculateCost()} credite
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {generateOnlyText 
-                          ? 'Generare text (copywriting)'
-                          : 'Generare imagine'
-                        }
-                      </p>
-                    </motion.div>
-
                     <motion.button
                       type="submit"
                       disabled={isLoading || !prompt.trim()}
                       whileHover={{ scale: isLoading ? 1 : 1.05, y: -2 }}
                       whileTap={{ scale: isLoading ? 1 : 0.95 }}
-                      className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-500 hover:via-purple-500 hover:to-pink-500 text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl shadow-purple-500/50 flex items-center justify-center space-x-2 relative overflow-hidden group"
+                      className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-500 hover:via-purple-500 hover:to-pink-500 text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl shadow-purple-500/50 flex items-center justify-center gap-2 relative overflow-hidden group"
                     >
                       {/* Button glow effect */}
                       <motion.div
@@ -813,7 +787,7 @@ export default function Home() {
                       {isLoading ? (
                         <>
                           <motion.svg
-                            className="animate-spin h-5 w-5 text-white"
+                            className="animate-spin h-4 w-4 text-white"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -823,12 +797,15 @@ export default function Home() {
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </motion.svg>
-                          <span>Se generează...</span>
+                          <span className="text-sm">Se generează...</span>
                         </>
                       ) : (
                         <>
-                          <Sparkles className="w-5 h-5" />
-                          <span>{generateOnlyText ? 'Generează Text' : 'Generează Reclamă'}</span>
+                          <Sparkles className="w-4 h-4" />
+                          <span className="text-sm">{generateOnlyText ? 'Generează Text' : 'Generează Reclamă'}</span>
+                          <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full font-semibold">
+                            {calculateCost()} credite
+                          </span>
                         </>
                       )}
                     </motion.button>
@@ -836,6 +813,67 @@ export default function Home() {
                 </div>
               </div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* Showcase Section - Carousel - Moved up for visibility */}
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 overflow-hidden">
+          <div className="relative">
+            {/* Carousel Container */}
+            <div className="overflow-hidden">
+              <div className="flex gap-4 lg:gap-6 carousel-infinite" style={{ width: 'fit-content' }}>
+                {/* Duplicate ads for infinite scroll - 2 sets pentru loop smooth */}
+                {[...Array(2)].map((_, duplicateIndex) => (
+                  <div key={duplicateIndex} className="flex gap-4 lg:gap-6 flex-shrink-0">
+                    {/* Array cu 10 imagini */}
+                    {[
+                      'galerie-1.jpg',
+                      'galerie-2.jpg',
+                      'galerie-3.jpg',
+                      'galerie-4.jpg',
+                      'galerie-5.jpg',
+                      'galerie-6.jpg',
+                      'galerie-7.jpg',
+                      'galerie-8.jpg',
+                      'galerie-9.jpg',
+                      'galerie-10.jpg',
+                    ].map((imageName, index) => (
+                      <motion.div
+                        key={`${duplicateIndex}-${index}`}
+                        whileHover={{ y: -8, scale: 1.02 }}
+                        className="relative group overflow-hidden rounded-xl bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 hover:border-gray-600/50 transition-all flex-shrink-0 w-64 lg:w-80 xl:w-96 shadow-2xl"
+                      >
+                        {/* Ad Preview */}
+                        <div className="aspect-[2/3] relative overflow-hidden">
+                          {/* Imaginea reală */}
+                          <img
+                            src={`/carousel/${imageName}`}
+                            alt={`Galerie ${index + 1}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              // Fallback dacă imaginea nu există
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center"><p class="text-gray-500 text-sm">Imagine indisponibilă</p></div>';
+                              }
+                            }}
+                          />
+                          
+                          {/* Overlay gradient pentru text readability */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Gradient Fade Edges */}
+            <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[#0a0a0f] to-transparent pointer-events-none z-10" />
+            <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#0a0a0f] to-transparent pointer-events-none z-10" />
           </div>
         </section>
 
@@ -953,66 +991,6 @@ export default function Home() {
           </section>
         )}
 
-        {/* Showcase Section - Carousel */}
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 overflow-hidden">
-          <div className="relative">
-            {/* Carousel Container */}
-            <div className="overflow-hidden">
-              <div className="flex gap-6 carousel-infinite" style={{ width: 'fit-content' }}>
-                {/* Duplicate ads for infinite scroll - 2 sets pentru loop smooth */}
-                {[...Array(2)].map((_, duplicateIndex) => (
-                  <div key={duplicateIndex} className="flex gap-6 flex-shrink-0">
-                    {/* Array cu 10 imagini */}
-                    {[
-                      'galerie-1.jpg',
-                      'galerie-2.jpg',
-                      'galerie-3.jpg',
-                      'galerie-4.jpg',
-                      'galerie-5.jpg',
-                      'galerie-6.jpg',
-                      'galerie-7.jpg',
-                      'galerie-8.jpg',
-                      'galerie-9.jpg',
-                      'galerie-10.jpg',
-                    ].map((imageName, index) => (
-                      <motion.div
-                        key={`${duplicateIndex}-${index}`}
-                        whileHover={{ y: -8, scale: 1.02 }}
-                        className="relative group overflow-hidden rounded-xl bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 hover:border-gray-600/50 transition-all flex-shrink-0 w-96 shadow-2xl"
-                      >
-                        {/* Ad Preview */}
-                        <div className="aspect-[2/3] relative overflow-hidden">
-                          {/* Imaginea reală */}
-                          <img
-                            src={`/carousel/${imageName}`}
-                            alt={`Galerie ${index + 1}`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              // Fallback dacă imaginea nu există
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              const parent = target.parentElement;
-                              if (parent) {
-                                parent.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center"><p class="text-gray-500 text-sm">Imagine indisponibilă</p></div>';
-                              }
-                            }}
-                          />
-                          
-                          {/* Overlay gradient pentru text readability */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Gradient Fade Edges */}
-            <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[#0a0a0f] to-transparent pointer-events-none z-10" />
-            <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#0a0a0f] to-transparent pointer-events-none z-10" />
-          </div>
-        </section>
 
         {/* Pricing Section */}
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -1029,7 +1007,7 @@ export default function Home() {
               </span>
             </h2>
             <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              Alege pachetul de credite perfect pentru nevoile tale. Folosește creditele pentru generare text (3 credite) sau imagini (5 credite).
+              Alege pachetul de credite perfect pentru nevoile tale. Folosește creditele pentru generare text (3 credite) sau imagini (6 credite).
             </p>
           </motion.div>
 
