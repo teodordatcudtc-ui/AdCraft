@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import Auth from '@/components/Auth'
@@ -88,6 +88,148 @@ const ASPECT_RATIO_PRESETS: Record<AspectRatio, { width: number; height: number;
 const IMAGE_GENERATION_COST = 6
 const TEXT_GENERATION_COST = 3
 
+// Traduceri pentru dashboard
+const translations = {
+  ro: {
+    // Sidebar
+    tools: 'Tooluri',
+    logs: 'Loguri',
+    credits: 'Credite',
+    settings: 'Setări',
+    profile: 'Profil',
+    dashboard: 'Dashboard',
+    logout: 'Deconectare',
+    search: 'Caută...',
+    
+    // Tooluri
+    generateAd: 'Generează Reclamă',
+    generateText: 'Generează Text',
+    creditsCost: 'credite',
+    
+    // Profil
+    edit: 'Editează',
+    cancel: 'Anulează',
+    save: 'Salvează',
+    saving: 'Se salvează...',
+    fullName: 'Nume complet',
+    email: 'Email',
+    phone: 'Telefon',
+    bio: 'Bio',
+    avatarUrl: 'URL Avatar',
+    apiKey: 'API Key',
+    copy: 'Copiază',
+    memberSince: 'Membru din',
+    notSet: 'Nu este setat',
+    emailCannotBeChanged: 'Email-ul nu poate fi modificat',
+    enterFullName: 'Introdu numele tău complet',
+    aboutYou: 'Despre tine...',
+    characters: 'caractere',
+    profileUpdated: 'Profilul a fost actualizat cu succes!',
+    errorUpdatingProfile: 'Eroare la actualizarea profilului',
+    
+    // Setări
+    language: 'Limbă',
+    emailNotifications: 'Notificări Email',
+    emailNotificationsDesc: 'Primește notificări pe email pentru activități importante',
+    saveSettings: 'Salvează Setările',
+    settingsSaved: 'Setările au fost salvate cu succes!',
+    errorSavingSettings: 'Eroare la salvarea setărilor',
+    userNotAuthenticated: 'Utilizatorul nu este autentificat',
+    
+    // Notificări
+    success: 'Succes',
+    error: 'Eroare',
+    
+    // Credits
+    remainingCredits: 'Credite Rămase',
+    availableCredits: 'Credite Disponibile',
+    transactionHistory: 'Istoric Tranzacții',
+    noTransactions: 'Nu există tranzacții încă',
+    addTestCredits: '+10 Credite (Test)',
+    
+    // Logs/History
+    activityHistory: 'Istoric Activități',
+    noActivities: 'Nu există activități încă',
+    
+    // Tools
+    openTool: 'Deschide Tool',
+    createOptimizedAds: 'Creează reclame optimizate cu AI pentru produsele tale (imagine + text)',
+    generateCopywriting: 'Generează text publicitar optimizat pentru produsele tale',
+    generating: 'Se generează...',
+    generateAdWithCredits: 'credite',
+    generateTextWithCredits: 'credite',
+  },
+  en: {
+    // Sidebar
+    tools: 'Tools',
+    logs: 'Logs',
+    credits: 'Credits',
+    settings: 'Settings',
+    profile: 'Profile',
+    dashboard: 'Dashboard',
+    logout: 'Logout',
+    search: 'Search...',
+    
+    // Tooluri
+    generateAd: 'Generate Ad',
+    generateText: 'Generate Text',
+    creditsCost: 'credits',
+    
+    // Profil
+    edit: 'Edit',
+    cancel: 'Cancel',
+    save: 'Save',
+    saving: 'Saving...',
+    fullName: 'Full Name',
+    email: 'Email',
+    phone: 'Phone',
+    bio: 'Bio',
+    avatarUrl: 'Avatar URL',
+    apiKey: 'API Key',
+    copy: 'Copy',
+    memberSince: 'Member since',
+    notSet: 'Not set',
+    emailCannotBeChanged: 'Email cannot be changed',
+    enterFullName: 'Enter your full name',
+    aboutYou: 'About you...',
+    characters: 'characters',
+    profileUpdated: 'Profile updated successfully!',
+    errorUpdatingProfile: 'Error updating profile',
+    
+    // Setări
+    language: 'Language',
+    emailNotifications: 'Email Notifications',
+    emailNotificationsDesc: 'Receive email notifications for important activities',
+    saveSettings: 'Save Settings',
+    settingsSaved: 'Settings saved successfully!',
+    errorSavingSettings: 'Error saving settings',
+    userNotAuthenticated: 'User is not authenticated',
+    
+    // Notificări
+    success: 'Success',
+    error: 'Error',
+    
+    // Credits
+    remainingCredits: 'Remaining Credits',
+    availableCredits: 'Available Credits',
+    transactionHistory: 'Transaction History',
+    noTransactions: 'No transactions yet',
+    addTestCredits: '+10 Credits (Test)',
+    
+    // Logs/History
+    activityHistory: 'Activity History',
+    noActivities: 'No activities yet',
+    
+    // Tools
+    openTool: 'Open Tool',
+    createOptimizedAds: 'Create AI-optimized ads for your products (image + text)',
+    generateCopywriting: 'Generate optimized advertising text for your products',
+    generating: 'Generating...',
+    generateAdWithCredits: 'credits',
+    generateTextWithCredits: 'credits',
+  },
+}
+
 interface LogEntry {
   id: string
   type: 'success' | 'error' | 'info' | 'warning'
@@ -112,6 +254,32 @@ export default function Dashboard() {
   const [activeSection, setActiveSection] = useState<Section>('tooluri')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  
+  // State pentru editare profil
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
+  const [profileFormData, setProfileFormData] = useState({
+    full_name: '',
+    phone: '',
+    bio: '',
+    avatar_url: '',
+  })
+  const [savingProfile, setSavingProfile] = useState(false)
+  
+  // State pentru setări
+  const [settingsFormData, setSettingsFormData] = useState({
+    language: 'ro',
+    email_notifications: true,
+  })
+  const [savingSettings, setSavingSettings] = useState(false)
+  
+  // Funcție helper pentru traduceri
+  const t = (key: keyof typeof translations.ro): string => {
+    const lang = settingsFormData.language || 'ro'
+    return translations[lang as 'ro' | 'en']?.[key] || translations.ro[key] || key
+  }
+  
+  // State pentru notificări
+  const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null)
   
   // Date reale din baza de date
   const [logs, setLogs] = useState<LogEntry[]>([])
@@ -196,8 +364,9 @@ export default function Dashboard() {
           .limit(50),
         supabase
           .from('generations')
-          .select('id, status')
-          .eq('user_id', userId),
+          .select('id, status, type')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false }),
         supabase
           .from('user_profiles')
           .select('*')
@@ -210,6 +379,18 @@ export default function Dashboard() {
       // Procesează profilul
       if (profileResult.data) {
         setUserProfile(profileResult.data)
+        // Inițializează formularul cu datele existente
+        setProfileFormData({
+          full_name: profileResult.data.full_name || '',
+          phone: profileResult.data.phone || '',
+          bio: profileResult.data.bio || '',
+          avatar_url: profileResult.data.avatar_url || '',
+        })
+        // Inițializează setările
+        setSettingsFormData({
+          language: profileResult.data.language || 'ro',
+          email_notifications: profileResult.data.email_notifications !== false,
+        })
       }
 
       // Procesează creditele - PRIORITATE: tranzacții (mai sigur)
@@ -325,10 +506,21 @@ export default function Dashboard() {
       }
 
       // Procesează statistici generări
-      if (generationsResult.data) {
-        setTotalGenerations(generationsResult.data.length)
-        setSuccessfulGenerations(generationsResult.data.filter(g => g.status === 'completed').length)
-        setFailedGenerations(generationsResult.data.filter(g => g.status === 'failed').length)
+      if (generationsResult.data && Array.isArray(generationsResult.data)) {
+        const total = generationsResult.data.length
+        const successful = generationsResult.data.filter(g => g.status === 'completed').length
+        const failed = generationsResult.data.filter(g => g.status === 'failed').length
+        
+        console.log('📊 Generations stats:', { total, successful, failed, sample: generationsResult.data.slice(0, 3) })
+        
+        setTotalGenerations(total)
+        setSuccessfulGenerations(successful)
+        setFailedGenerations(failed)
+      } else {
+        console.warn('⚠️ No generations data or invalid format:', generationsResult)
+        setTotalGenerations(0)
+        setSuccessfulGenerations(0)
+        setFailedGenerations(0)
       }
 
       console.log('✅ All user data loaded successfully')
@@ -339,13 +531,14 @@ export default function Dashboard() {
     }
   }
 
-  const menuItems = [
-    { id: 'tooluri' as Section, label: 'Tooluri', icon: Wrench },
-    { id: 'logs' as Section, label: 'Logs', icon: FileText },
-    { id: 'credite' as Section, label: 'Credite', icon: Coins },
-    { id: 'setari' as Section, label: 'Setări', icon: Settings },
-    { id: 'profil' as Section, label: 'Profil', icon: UserIcon },
-  ]
+  // Menu items - se actualizează dinamic cu traducerile (memoizat pentru performanță)
+  const menuItems = useMemo(() => [
+    { id: 'tooluri' as Section, label: t('tools'), icon: Wrench },
+    { id: 'logs' as Section, label: t('logs'), icon: FileText },
+    { id: 'credite' as Section, label: t('credits'), icon: Coins },
+    { id: 'setari' as Section, label: t('settings'), icon: Settings },
+    { id: 'profil' as Section, label: t('profile'), icon: UserIcon },
+  ], [settingsFormData.language])
 
   // VERIFICARE SESIUNE - ABORDARE FINALĂ: Citire directă token JWT din localStorage
   useEffect(() => {
@@ -635,6 +828,7 @@ export default function Dashboard() {
         body: JSON.stringify({
           prompt: textPrompt,
           generateOnlyText: true,
+          user_id: user.id,
         }),
       })
 
@@ -665,16 +859,21 @@ export default function Dashboard() {
         }
 
         setGeneratedText(result.data.text)
-        // Reîncarcă creditele pentru a reflecta scăderea
+        // Reîncarcă datele pentru a reflecta scăderea creditelor și actualizarea statisticilor
         await loadUserData(user.id)
       } else {
-        // Dacă generarea a eșuat, nu se deduc credite
+        // Dacă generarea a eșuat, nu se deduc credite, dar reîncarcă datele pentru statistici
         setGeneratedTextError(result.error || 'Eroare la generarea textului')
+        await loadUserData(user.id)
       }
     } catch (error) {
       console.error('Error generating text:', error)
       setGeneratedTextError(error instanceof Error ? error.message : 'Eroare la generarea textului')
       setGeneratedText(null)
+      // Reîncarcă datele chiar și la eroare pentru a actualiza statisticile
+      if (user) {
+        await loadUserData(user.id)
+      }
     } finally {
       setIsTextLoading(false)
     }
@@ -720,6 +919,7 @@ export default function Dashboard() {
           prompt,
           image: imageBase64,
           generateOnlyText: false,
+          user_id: user.id,
           options: {
             aspect_ratio: options.aspectRatio,
             width: ASPECT_RATIO_PRESETS[options.aspectRatio].width,
@@ -765,16 +965,21 @@ export default function Dashboard() {
         } else {
           setGeneratedImageError('Cererea a fost trimisă cu succes.')
         }
-        // Reîncarcă creditele pentru a reflecta scăderea
+        // Reîncarcă datele pentru a reflecta scăderea creditelor și actualizarea statisticilor
         await loadUserData(user.id)
       } else {
-        // Dacă generarea a eșuat, nu se deduc credite
+        // Dacă generarea a eșuat, nu se deduc credite, dar reîncarcă datele pentru statistici
         setGeneratedImageError(result.error || 'Eroare la generarea reclamei')
+        await loadUserData(user.id)
       }
     } catch (error) {
       console.error('Error generating ad:', error)
       setGeneratedImageError(error instanceof Error ? error.message : 'Eroare la generarea reclamei')
       setGeneratedImageUrl(null)
+      // Reîncarcă datele chiar și la eroare pentru a actualiza statisticile
+      if (user) {
+        await loadUserData(user.id)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -867,7 +1072,7 @@ export default function Dashboard() {
               </motion.div>
               <div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  AdCraft AI
+                  AdLence.ai
                 </h1>
                 <p className="text-xs text-gray-400">Dashboard</p>
               </div>
@@ -923,7 +1128,7 @@ export default function Dashboard() {
             className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-400 hover:text-green-300 hover:bg-green-500/30 transition-all mb-2"
           >
             <Plus className="w-5 h-5" />
-            <span className="font-medium">+10 Credite (Test)</span>
+            <span className="font-medium">{t('addTestCredits')}</span>
           </button>
           <button
             onClick={handleLogout}
@@ -1013,18 +1218,18 @@ export default function Dashboard() {
                         <ImageIcon className="w-6 h-6 text-blue-400" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold text-white">Generează Reclamă</h3>
-                        <p className="text-sm text-gray-400">6 credite</p>
+                        <h3 className="text-lg font-bold text-white">{t('generateAd')}</h3>
+                        <p className="text-sm text-gray-400">{IMAGE_GENERATION_COST} {t('creditsCost')}</p>
                       </div>
                     </div>
                     <p className="text-sm text-gray-300 mb-4">
-                      Creează reclame optimizate cu AI pentru produsele tale (imagine + text)
+                      {t('createOptimizedAds')}
                     </p>
                     <button 
                       onClick={() => setIsGenerateAdModalOpen(true)}
                       className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all"
                     >
-                      Deschide Tool
+                      {t('openTool')}
                     </button>
                   </motion.div>
 
@@ -1037,18 +1242,18 @@ export default function Dashboard() {
                         <FileEdit className="w-6 h-6 text-green-400" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold text-white">Generează Text</h3>
-                        <p className="text-sm text-gray-400">3 credite</p>
+                        <h3 className="text-lg font-bold text-white">{t('generateText')}</h3>
+                        <p className="text-sm text-gray-400">{TEXT_GENERATION_COST} {t('creditsCost')}</p>
                       </div>
                     </div>
                     <p className="text-sm text-gray-300 mb-4">
-                      Creează text publicitar profesional cu AI (doar copywriting)
+                      {t('generateCopywriting')}
                     </p>
                     <button 
                       onClick={() => setIsGenerateTextModalOpen(true)}
                       className="w-full px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-lg transition-all"
                     >
-                      Deschide Tool
+                      {t('openTool')}
                     </button>
                   </motion.div>
                 </div>
@@ -1078,7 +1283,7 @@ export default function Dashboard() {
                     className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 rounded-xl p-6"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-400">Credite Rămase</span>
+                      <span className="text-sm text-gray-400">{t('remainingCredits')}</span>
                       <Coins className="w-5 h-5 text-purple-400" />
                     </div>
                     <p className="text-3xl font-bold text-white">{currentCredits}</p>
@@ -1122,7 +1327,7 @@ export default function Dashboard() {
               >
                 <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm text-gray-300">Credite Disponibile</span>
+                    <span className="text-sm text-gray-300">{t('availableCredits')}</span>
                     <Coins className="w-8 h-8 text-purple-400" />
                   </div>
                   <p className="text-4xl font-bold text-white mb-2">{currentCredits}</p>
@@ -1134,22 +1339,28 @@ export default function Dashboard() {
                 {transactions.length > 0 && (
                   <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 rounded-xl overflow-hidden">
                     <div className="p-6 border-b border-gray-700/50">
-                      <h3 className="text-lg font-bold text-white">Istoric Tranzacții</h3>
+                      <h3 className="text-lg font-bold text-white">{t('transactionHistory')}</h3>
                     </div>
                     <div className="divide-y divide-gray-700/50">
-                      {transactions.map((transaction) => (
-                        <div key={transaction.id} className="p-6">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-semibold text-white">{transaction.description}</p>
-                              <p className="text-xs text-gray-400">{transaction.timestamp}</p>
-                            </div>
-                            <p className={`text-lg font-bold ${transaction.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                              {transaction.amount > 0 ? '+' : ''}{transaction.amount}
-                            </p>
-                          </div>
+                      {transactions.length === 0 ? (
+                        <div className="p-6 text-center">
+                          <p className="text-gray-400">{t('noTransactions')}</p>
                         </div>
-                      ))}
+                      ) : (
+                        transactions.map((transaction) => (
+                          <div key={transaction.id} className="p-6">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-semibold text-white">{transaction.description}</p>
+                                <p className="text-xs text-gray-400">{transaction.timestamp}</p>
+                              </div>
+                              <p className={`text-lg font-bold ${transaction.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {transaction.amount > 0 ? '+' : ''}{transaction.amount}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 )}
@@ -1166,9 +1377,9 @@ export default function Dashboard() {
                 className="space-y-6"
               >
                 <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 rounded-xl p-6">
-                  <h3 className="text-lg font-bold text-white mb-4">Istoric Activități</h3>
+                  <h3 className="text-lg font-bold text-white mb-4">{t('activityHistory')}</h3>
                   {logs.length === 0 ? (
-                    <p className="text-gray-400">Nu există activități încă</p>
+                    <p className="text-gray-400">{t('noActivities')}</p>
                   ) : (
                     <div className="space-y-4">
                       {logs.map((log) => (
@@ -1195,8 +1406,153 @@ export default function Dashboard() {
                 className="space-y-6"
               >
                 <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 rounded-xl p-6">
-                  <h3 className="text-lg font-bold text-white mb-4">Setări</h3>
-                  <p className="text-gray-400">Setările vor fi disponibile aici</p>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-blue-400" />
+                      {t('settings')}
+                    </h3>
+                  </div>
+                  
+                  <form onSubmit={async (e) => {
+                    e.preventDefault()
+                    if (!user) {
+                      setNotification({ type: 'error', message: t('userNotAuthenticated') })
+                      setTimeout(() => setNotification(null), 3000)
+                      return
+                    }
+                    
+                    setSavingSettings(true)
+                    try {
+                      const { data, error } = await supabase
+                        .from('user_profiles')
+                        .update({
+                          language: settingsFormData.language,
+                          email_notifications: settingsFormData.email_notifications,
+                          updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', user.id)
+                        .select()
+                        .single()
+                      
+                      if (error) {
+                        console.error('Supabase error:', error)
+                        throw error
+                      }
+                      
+                      // Actualizează profilul local
+                      if (data) {
+                        setUserProfile({
+                          ...(userProfile || {}),
+                          ...data,
+                        })
+                        // Actualizează și limba în settingsFormData pentru ca traducerile să se actualizeze imediat
+                        // Folosim funcție updater pentru a evita dependențe circulare
+                        setSettingsFormData(prev => ({
+                          ...prev,
+                          language: data.language || 'ro',
+                          email_notifications: data.email_notifications !== false,
+                        }))
+                      }
+                      
+                      // Folosește limba nouă pentru notificare (folosim direct din data, nu din state)
+                      const lang = data?.language || settingsFormData.language || 'ro'
+                      const successMsg = translations[lang as 'ro' | 'en']?.settingsSaved || translations.ro.settingsSaved
+                      setNotification({ type: 'success', message: successMsg })
+                      setTimeout(() => setNotification(null), 3000)
+                    } catch (error: any) {
+                      console.error('Error saving settings:', error)
+                      setNotification({ 
+                        type: 'error', 
+                        message: t('errorSavingSettings') + ': ' + (error.message || 'Unknown error') 
+                      })
+                      setTimeout(() => setNotification(null), 5000)
+                    } finally {
+                      setSavingSettings(false)
+                    }
+                  }} className="space-y-6">
+                    {/* Limba */}
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-blue-400" />
+                        {t('language')}
+                      </label>
+                      <select
+                        value={settingsFormData.language}
+                        onChange={(e) => {
+                          const newLang = e.target.value as 'ro' | 'en'
+                          setSettingsFormData({ ...settingsFormData, language: newLang })
+                        }}
+                        className="w-full px-4 py-2.5 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50"
+                      >
+                        <option value="ro">Română</option>
+                        <option value="en">English</option>
+                      </select>
+                    </div>
+                    
+                    {/* Notificări email */}
+                    <div>
+                      <label className="flex items-center justify-between p-4 bg-gray-800/60 border border-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-800/80 transition-all">
+                        <div className="flex items-center gap-3">
+                          <Bell className="w-4 h-4 text-yellow-400" />
+                          <div>
+                            <p className="text-sm font-semibold text-white">{t('emailNotifications')}</p>
+                            <p className="text-xs text-gray-400">{t('emailNotificationsDesc')}</p>
+                          </div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={settingsFormData.email_notifications}
+                            onChange={(e) => setSettingsFormData({ ...settingsFormData, email_notifications: e.target.checked })}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-500/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </label>
+                    </div>
+                    
+                    {/* Notificare */}
+                    {notification && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`p-3 rounded-lg ${
+                          notification.type === 'success' 
+                            ? 'bg-green-500/20 border border-green-500/50 text-green-400' 
+                            : 'bg-red-500/20 border border-red-500/50 text-red-400'
+                        }`}
+                      >
+                        <p className="text-sm font-medium">{notification.message}</p>
+                      </motion.div>
+                    )}
+                    
+                    {/* Buton salvare */}
+                    <button
+                      type="submit"
+                      disabled={savingSettings}
+                      className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {savingSettings ? (
+                        <>
+                          <motion.svg
+                            className="animate-spin h-4 w-4 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </motion.svg>
+                          <span>{t('saving')}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4" />
+                          <span>{t('saveSettings')}</span>
+                        </>
+                      )}
+                    </button>
+                  </form>
                 </div>
               </motion.div>
             )}
@@ -1210,17 +1566,331 @@ export default function Dashboard() {
                 className="space-y-6"
               >
                 <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 rounded-xl p-6">
-                  <h3 className="text-lg font-bold text-white mb-4">Profil</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-gray-400">Nume</p>
-                      <p className="text-white">{userProfile?.full_name || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">Email</p>
-                      <p className="text-white">{user.email}</p>
-                    </div>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                      <UserIcon className="w-5 h-5 text-blue-400" />
+                      {t('profile')}
+                    </h3>
+                    {!isEditingProfile && (
+                      <button
+                        onClick={() => setIsEditingProfile(true)}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-lg transition-all flex items-center gap-2"
+                      >
+                        <FileEdit className="w-4 h-4" />
+                        {t('edit')}
+                      </button>
+                    )}
                   </div>
+                  
+                  {!isEditingProfile ? (
+                    // Vizualizare profil
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm text-gray-400 mb-1">{t('fullName')}</p>
+                        <p className="text-white font-medium">{userProfile?.full_name || t('notSet')}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-400 mb-1">{t('email')}</p>
+                        <p className="text-white font-medium">{user?.email || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-400 mb-1 flex items-center gap-2">
+                          <Phone className="w-3 h-3" />
+                          {t('phone')}
+                        </p>
+                        <p className="text-white font-medium">{userProfile?.phone || t('notSet')}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-400 mb-1">{t('bio')}</p>
+                        <p className="text-white font-medium whitespace-pre-wrap">{userProfile?.bio || t('notSet')}</p>
+                      </div>
+                      {userProfile?.avatar_url && (
+                        <div>
+                          <p className="text-sm text-gray-400 mb-2">Avatar</p>
+                          <img
+                            src={userProfile.avatar_url}
+                            alt="Avatar"
+                            className="w-24 h-24 rounded-full object-cover border-2 border-gray-700"
+                          />
+                        </div>
+                      )}
+                      {userProfile?.api_key && (
+                        <div>
+                          <p className="text-sm text-gray-400 mb-1 flex items-center gap-2">
+                            <Shield className="w-3 h-3" />
+                            API Key
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <code className="text-xs text-gray-300 bg-gray-800/50 px-3 py-2 rounded border border-gray-700/50 font-mono">
+                              {userProfile.api_key}
+                            </code>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(userProfile.api_key)
+                                setNotification({ type: 'success', message: t('apiKey') + ' ' + t('copy') + '!' })
+                                setTimeout(() => setNotification(null), 2000)
+                              }}
+                              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-all"
+                            >
+                              {t('copy')}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm text-gray-400 mb-1">{t('memberSince')}</p>
+                        <p className="text-white font-medium">
+                          {userProfile?.created_at 
+                            ? new Date(userProfile.created_at).toLocaleDateString(settingsFormData.language === 'en' ? 'en-US' : 'ro-RO', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                              })
+                            : 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    // Formular editare profil
+                    <form onSubmit={async (e) => {
+                      e.preventDefault()
+                      if (!user) {
+                        setNotification({ type: 'error', message: 'Utilizatorul nu este autentificat' })
+                        setTimeout(() => setNotification(null), 3000)
+                        return
+                      }
+                      
+                      setSavingProfile(true)
+                      try {
+                        // Pregătește datele pentru update - tratează bio special
+                        const updateData: any = {
+                          full_name: profileFormData.full_name?.trim() || null,
+                          phone: profileFormData.phone?.trim() || null,
+                          avatar_url: profileFormData.avatar_url?.trim() || null,
+                          updated_at: new Date().toISOString(),
+                        }
+                        
+                        // Tratează bio separat - normalizează newlines și trim
+                        if (profileFormData.bio) {
+                          // Normalizează newlines (Windows \r\n -> \n, apoi normalizează)
+                          const normalizedBio = profileFormData.bio
+                            .replace(/\r\n/g, '\n')
+                            .replace(/\r/g, '\n')
+                            .trim()
+                          updateData.bio = normalizedBio || null
+                        } else {
+                          updateData.bio = null
+                        }
+                        
+                        console.log('Updating profile with data:', {
+                          ...updateData,
+                          bio_length: updateData.bio?.length || 0,
+                          bio_preview: updateData.bio?.substring(0, 50) || 'empty'
+                        })
+                        
+                        const { data, error } = await supabase
+                          .from('user_profiles')
+                          .update(updateData)
+                          .eq('id', user.id)
+                          .select()
+                          .single()
+                        
+                        if (error) {
+                          console.error('Supabase error details:', {
+                            message: error.message,
+                            details: error.details,
+                            hint: error.hint,
+                            code: error.code
+                          })
+                          throw error
+                        }
+                        
+                        console.log('Profile updated successfully:', data)
+                        
+                        // Actualizează profilul local
+                        if (data) {
+                          setUserProfile(data)
+                          // Actualizează și formularul cu datele salvate
+                          setProfileFormData({
+                            full_name: data.full_name || '',
+                            phone: data.phone || '',
+                            bio: data.bio || '',
+                            avatar_url: data.avatar_url || '',
+                          })
+                        }
+                        
+                        setIsEditingProfile(false)
+                        setNotification({ type: 'success', message: t('profileUpdated') })
+                        setTimeout(() => setNotification(null), 3000)
+                      } catch (error: any) {
+                        console.error('Error updating profile:', error)
+                        const errorMessage = error.message || error.details || 'Unknown error'
+                        setNotification({ 
+                          type: 'error', 
+                          message: `${t('errorUpdatingProfile')}: ${errorMessage}` 
+                        })
+                        setTimeout(() => setNotification(null), 5000)
+                      } finally {
+                        setSavingProfile(false)
+                      }
+                    }} className="space-y-4">
+                      {/* Nume complet */}
+                      <div>
+                        <label className="block text-sm font-semibold text-white mb-2">
+                          {t('fullName')}
+                        </label>
+                        <input
+                          type="text"
+                          value={profileFormData.full_name}
+                          onChange={(e) => setProfileFormData({ ...profileFormData, full_name: e.target.value })}
+                          placeholder={t('enterFullName')}
+                          className="w-full px-4 py-2.5 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50"
+                        />
+                      </div>
+                      
+                      {/* Email (read-only) */}
+                      <div>
+                        <label className="block text-sm font-semibold text-white mb-2">
+                          {t('email')}
+                        </label>
+                        <input
+                          type="email"
+                          value={user?.email || ''}
+                          disabled
+                          className="w-full px-4 py-2.5 bg-gray-800/40 border border-gray-700/30 rounded-lg text-gray-400 cursor-not-allowed"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">{t('emailCannotBeChanged')}</p>
+                      </div>
+                      
+                      {/* Telefon */}
+                      <div>
+                        <label className="block text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-blue-400" />
+                          {t('phone')}
+                        </label>
+                        <input
+                          type="tel"
+                          value={profileFormData.phone}
+                          onChange={(e) => setProfileFormData({ ...profileFormData, phone: e.target.value })}
+                          placeholder="+40 123 456 789"
+                          className="w-full px-4 py-2.5 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50"
+                        />
+                      </div>
+                      
+                      {/* Bio */}
+                      <div>
+                        <label className="block text-sm font-semibold text-white mb-2">
+                          {t('bio')}
+                        </label>
+                        <textarea
+                          value={profileFormData.bio}
+                          onChange={(e) => {
+                            const value = e.target.value
+                            // Limitează la 500 caractere pentru a evita probleme
+                            const limitedValue = value.length > 500 ? value.substring(0, 500) : value
+                            setProfileFormData({ ...profileFormData, bio: limitedValue })
+                          }}
+                          placeholder={t('aboutYou')}
+                          rows={4}
+                          maxLength={500}
+                          className="w-full px-4 py-2.5 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 resize-none"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          {profileFormData.bio.length}/500 {t('characters')}
+                        </p>
+                      </div>
+                      
+                      {/* Avatar URL */}
+                      <div>
+                        <label className="block text-sm font-semibold text-white mb-2">
+                          {t('avatarUrl')}
+                        </label>
+                        <input
+                          type="url"
+                          value={profileFormData.avatar_url}
+                          onChange={(e) => setProfileFormData({ ...profileFormData, avatar_url: e.target.value })}
+                          placeholder="https://example.com/avatar.jpg"
+                          className="w-full px-4 py-2.5 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50"
+                        />
+                        {profileFormData.avatar_url && (
+                          <div className="mt-2">
+                            <p className="text-xs text-gray-400 mb-2">Preview:</p>
+                            <img
+                              src={profileFormData.avatar_url}
+                              alt="Avatar preview"
+                              className="w-16 h-16 rounded-full object-cover border-2 border-gray-700"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement
+                                target.style.display = 'none'
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Notificare */}
+                      {notification && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className={`p-3 rounded-lg ${
+                            notification.type === 'success' 
+                              ? 'bg-green-500/20 border border-green-500/50 text-green-400' 
+                              : 'bg-red-500/20 border border-red-500/50 text-red-400'
+                          }`}
+                        >
+                          <p className="text-sm font-medium">{notification.message}</p>
+                        </motion.div>
+                      )}
+                      
+                      {/* Butoane */}
+                      <div className="flex gap-3 pt-2">
+                        <button
+                          type="submit"
+                          disabled={savingProfile}
+                          className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {savingProfile ? (
+                            <>
+                              <motion.svg
+                                className="animate-spin h-4 w-4 text-white"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </motion.svg>
+                              <span>{t('saving')}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Check className="w-4 h-4" />
+                              <span>{t('save')}</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEditingProfile(false)
+                            // Resetează formularul la valorile originale
+                            if (userProfile) {
+                              setProfileFormData({
+                                full_name: userProfile.full_name || '',
+                                phone: userProfile.phone || '',
+                                bio: userProfile.bio || '',
+                                avatar_url: userProfile.avatar_url || '',
+                              })
+                            }
+                          }}
+                          className="px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all"
+                        >
+                          {t('cancel')}
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -1238,7 +1908,7 @@ export default function Dashboard() {
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Generează Reclamă
+                {t('generateAd')}
               </h3>
               <button
                 onClick={() => {
@@ -1547,7 +2217,7 @@ export default function Dashboard() {
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5" />
-                    <span>Generează Reclamă ({IMAGE_GENERATION_COST} credite)</span>
+                    <span>{t('generateAd')} ({IMAGE_GENERATION_COST} {t('creditsCost')})</span>
                   </>
                 )}
               </motion.button>
@@ -1582,7 +2252,7 @@ export default function Dashboard() {
             className="bg-gray-900 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-white">Generează Text Publicitar</h3>
+              <h3 className="text-xl font-bold text-white">{t('generateText')}</h3>
               <button
                 onClick={() => {
                   setIsGenerateTextModalOpen(false)
@@ -1641,7 +2311,7 @@ export default function Dashboard() {
                   disabled={isTextLoading || currentCredits < TEXT_GENERATION_COST}
                   className="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-lg transition-all disabled:opacity-50"
                 >
-                  {isTextLoading ? 'Se generează...' : `Generează Text (${TEXT_GENERATION_COST} credite)`}
+                  {isTextLoading ? t('generating') : `${t('generateText')} (${TEXT_GENERATION_COST} ${t('creditsCost')})`}
                 </button>
                 <button
                   type="button"

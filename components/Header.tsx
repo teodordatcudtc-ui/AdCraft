@@ -62,7 +62,7 @@ export default function Header() {
               />
             </motion.div>
             <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              AdCraft AI
+              AdLence.ai
             </span>
           </Link>
 

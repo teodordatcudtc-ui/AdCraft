@@ -136,7 +136,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
             <Sparkles className="w-8 h-8 text-white" />
           </motion.div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
-            AdCraft AI
+            AdLence.ai
           </h1>
           <p className="text-gray-400">
             {mode === 'signin' ? 'Autentifică-te în cont' : 'Creează cont nou'}

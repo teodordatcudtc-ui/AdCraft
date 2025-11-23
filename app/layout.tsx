@@ -3,7 +3,7 @@ import './globals.css'
 import ConditionalLayout from '@/components/ConditionalLayout'
 
 export const metadata: Metadata = {
-  title: 'AdCraft AI - AI-Powered Ad Generation',
+  title: 'AdLence.ai - AI-Powered Ad Generation',
   description: 'Generează reclame optimizate și imagini pentru produsele tale cu AI',
 }
 

@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Sparkles, Zap, Target, Award, ArrowRight, Image as ImageIcon, Check, TrendingUp, Users, Clock, Settings, ChevronDown, ChevronUp } from 'lucide-react'
+import { isAdminAuthenticated } from '@/lib/admin-auth'
 
 type AspectRatio = '16:9' | '9:16' | '1:1' | '4:3'
 
@@ -46,6 +48,10 @@ const ASPECT_RATIO_PRESETS: Record<AspectRatio, { width: number; height: number;
 }
 
 export default function Home() {
+  const router = useRouter()
+  const [isChecking, setIsChecking] = useState(true)
+  
+  // Toate hook-urile trebuie să fie apelate înainte de orice return condiționat
   const [prompt, setPrompt] = useState('')
   const [image, setImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -62,6 +68,35 @@ export default function Home() {
     guidanceScale: 7.5,
     numInferenceSteps: 20,
   })
+
+  // Verifică autentificarea admin la mount
+  useEffect(() => {
+    if (!isAdminAuthenticated()) {
+      router.push('/waiting-list')
+    } else {
+      setIsChecking(false)
+    }
+  }, [router])
+
+  // Dacă se verifică autentificarea, afișează loading
+  if (isChecking) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <motion.div
+            className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full mx-auto mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          />
+          <p className="text-gray-400">Se verifică accesul...</p>
+        </motion.div>
+      </div>
+    )
+  }
 
   // Costuri în credite
   const TEXT_GENERATION_COST = 3
@@ -344,7 +379,7 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
               >
                 <Sparkles className="w-3 h-3 text-green-400" />
-                <span className="text-xs text-green-300 font-medium">Powered by AdCraft AI</span>
+                <span className="text-xs text-green-300 font-medium">Powered by AdLence.ai</span>
               </motion.div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
@@ -360,7 +395,7 @@ export default function Home() {
               </h1>
 
               <p className="text-lg text-gray-400 mb-8 leading-relaxed max-w-xl">
-                AdCraft AI este o platformă avansată care generează reclame optimizate pentru produsele tale. 
+                AdLence.ai este o platformă avansată care generează reclame optimizate pentru produsele tale. 
                 Creează conținut inteligent și imagini captivante în secunde, adaptate perfect pentru target-ul tău.
               </p>
 

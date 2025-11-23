@@ -53,11 +53,11 @@ export default function Footer() {
                 <Sparkles className="w-8 h-8 text-blue-400" />
               </motion.div>
             <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              AdCraft AI
+              AdLence.ai
             </span>
             </Link>
             <p className="text-gray-400 text-sm max-w-md mb-4">
-              AdCraft AI - Platformă avansată pentru generarea de reclame optimizate. 
+              AdLence.ai - Platformă avansată pentru generarea de reclame optimizate. 
               Transformă produsele tale în campanii publicitare de succes.
             </p>
             <div className="flex space-x-4">
@@ -137,7 +137,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-500 text-sm mb-4 md:mb-0">
-            © {new Date().getFullYear()} AdCraft AI. Toate drepturile rezervate.
+            © {new Date().getFullYear()} AdLence.ai. Toate drepturile rezervate.
           </p>
           <p className="text-gray-500 text-sm">
             Construit cu <span className="text-red-500">❤</span> și AI

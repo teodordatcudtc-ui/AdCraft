@@ -1,13 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+// Client cu service role key pentru operații admin
+const supabaseAdmin = supabaseUrl && supabaseServiceKey
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+  : null
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { prompt, image, options, generateOnlyText } = body
+    const { prompt, image, options, generateOnlyText, user_id } = body
 
     if (!prompt) {
       return NextResponse.json(
         { error: 'Prompt is required' },
+        { status: 400 }
+      )
+    }
+
+    if (!user_id) {
+      return NextResponse.json(
+        { error: 'User ID is required' },
         { status: 400 }
       )
     }
@@ -114,6 +135,26 @@ export async function POST(request: NextRequest) {
       // Dacă tot nu am găsit, verifică dacă textul este literal string-ul și returnează eroare
       if (!generatedText || generatedText === '{{ $json.text }}') {
         console.error('Failed to extract text from n8n response:', textResult)
+        
+        // Salvează generarea ca failed
+        if (supabaseAdmin && user_id) {
+          try {
+            await supabaseAdmin
+              .from('generations')
+              .insert({
+                user_id: user_id,
+                type: 'text',
+                prompt: prompt,
+                status: 'failed',
+                cost: 3,
+                error_message: 'Failed to extract generated text from n8n response',
+                options: options || null,
+              })
+          } catch (err) {
+            console.error('Error saving failed generation:', err)
+          }
+        }
+        
         return NextResponse.json(
           { 
             error: 'Failed to extract generated text', 
@@ -124,10 +165,39 @@ export async function POST(request: NextRequest) {
         )
       }
 
+      // Salvează generarea ca succes în baza de date
+      let generationId = null
+      if (supabaseAdmin && user_id) {
+        try {
+          const { data: genData, error: genError } = await supabaseAdmin
+            .from('generations')
+            .insert({
+              user_id: user_id,
+              type: 'text',
+              prompt: prompt,
+              result_text: generatedText,
+              status: 'completed',
+              cost: 3,
+              options: options || null,
+            })
+            .select('id')
+            .single()
+          
+          if (!genError && genData) {
+            generationId = genData.id
+          } else {
+            console.error('Error saving generation:', genError)
+          }
+        } catch (err) {
+          console.error('Error saving generation:', err)
+        }
+      }
+
       return NextResponse.json({
         success: true,
         data: {
           text: generatedText,
+          generation_id: generationId,
         },
       })
     }
@@ -166,6 +236,26 @@ export async function POST(request: NextRequest) {
     if (!imageResponse.ok) {
       const errorText = await imageResponse.text()
       console.error('N8N image webhook error:', errorText)
+      
+      // Salvează generarea ca failed
+      if (supabaseAdmin && user_id) {
+        try {
+          await supabaseAdmin
+            .from('generations')
+            .insert({
+              user_id: user_id,
+              type: 'image',
+              prompt: prompt,
+              status: 'failed',
+              cost: 6,
+              error_message: `Failed to generate image: ${errorText}`,
+              options: options || null,
+            })
+        } catch (err) {
+          console.error('Error saving failed generation:', err)
+        }
+      }
+      
       return NextResponse.json(
         { error: 'Failed to generate image', details: errorText },
         { status: imageResponse.status }
@@ -199,12 +289,44 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Salvează generarea în baza de date
+    let generationId = null
+    if (supabaseAdmin && user_id) {
+      try {
+        const status = imageUrl ? 'completed' : (taskId ? 'processing' : 'pending')
+        const { data: genData, error: genError } = await supabaseAdmin
+          .from('generations')
+          .insert({
+            user_id: user_id,
+            type: 'image',
+            prompt: prompt,
+            result_url: imageUrl || null,
+            task_id: taskId || null,
+            status: status,
+            cost: 6,
+            options: options || null,
+            image_url: image || null,
+          })
+          .select('id')
+          .single()
+        
+        if (!genError && genData) {
+          generationId = genData.id
+        } else {
+          console.error('Error saving generation:', genError)
+        }
+      } catch (err) {
+        console.error('Error saving generation:', err)
+      }
+    }
+
     // Returnează doar imaginea (fără text)
     return NextResponse.json({
       success: true,
       data: {
         image_url: imageUrl,
         taskId: taskId,
+        generation_id: generationId,
       },
     })
   } catch (error) {

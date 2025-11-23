@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Dashboard - AdCraft AI',
-  description: 'Panoul de control AdCraft AI',
+  title: 'Dashboard - AdLence.ai',
+  description: 'Panoul de control AdLence.ai',
 }
 
 export default function DashboardLayout({
