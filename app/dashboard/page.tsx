@@ -40,6 +40,7 @@ import {
   ChevronDown,
   ChevronUp,
   Check,
+  ArrowLeft,
 } from 'lucide-react'
 
 type Section = 'tooluri' | 'logs' | 'credite' | 'setari' | 'profil'
@@ -757,10 +758,41 @@ export default function Dashboard() {
   }, [])
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setUserProfile(null)
-    sessionCheckedRef.current = false
+    try {
+      // Face signOut din Supabase PRIMA dată
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Error signing out:', error)
+        setNotification({ type: 'error', message: 'Eroare la deconectare' })
+        return
+      }
+      
+      // Șterge starea locală imediat după signOut
+      setUser(null)
+      setUserProfile(null)
+      setLogs([])
+      setTransactions([])
+      setCurrentCredits(0)
+      setTotalSpent(0)
+      setTotalEarned(0)
+      setTotalGenerations(0)
+      setSuccessfulGenerations(0)
+      setFailedGenerations(0)
+      sessionCheckedRef.current = false
+      
+      // Așteaptă puțin pentru ca evenimentul SIGNED_OUT să fie procesat
+      await new Promise(resolve => setTimeout(resolve, 200))
+      
+      // Componenta se va re-rendera automat și va afișa formularul de autentificare
+      // deoarece user este null - verificarea if (!user) va returna <Auth />
+    } catch (error) {
+      console.error('Error during logout:', error)
+      setNotification({ type: 'error', message: 'Eroare la deconectare' })
+      // Chiar dacă apare o eroare, resetăm starea locală
+      setUser(null)
+      setUserProfile(null)
+      sessionCheckedRef.current = false
+    }
   }
 
   const handleAddTestCredits = async () => {
@@ -1070,12 +1102,17 @@ export default function Dashboard() {
                   }}
                 />
               </motion.div>
-              <div>
+              <a 
+                href="https://adlence.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cursor-pointer hover:opacity-80 transition-opacity"
+              >
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                   AdLence.ai
                 </h1>
                 <p className="text-xs text-gray-400">Dashboard</p>
-              </div>
+              </a>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -1111,33 +1148,35 @@ export default function Dashboard() {
         </nav>
 
         {/* User Section */}
-        <div className="p-4 border-t border-gray-800/50">
-          <div className="flex items-center space-x-3 px-4 py-3 bg-gray-800/50 rounded-lg mb-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-              <UserIcon className="w-5 h-5 text-white" />
+        {user && (
+          <div className="p-4 border-t border-gray-800/50">
+            <div className="flex items-center space-x-3 px-4 py-3 bg-gray-800/50 rounded-lg mb-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                <UserIcon className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white truncate">
+                  {userProfile?.full_name || user?.email?.split('@')[0] || 'Utilizator'}
+                </p>
+                <p className="text-xs text-gray-400 truncate">{user?.email || ''}</p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">
-                {userProfile?.full_name || user.email?.split('@')[0] || 'Utilizator'}
-              </p>
-              <p className="text-xs text-gray-400 truncate">{user.email}</p>
-            </div>
+            <button
+              onClick={handleAddTestCredits}
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-400 hover:text-green-300 hover:bg-green-500/30 transition-all mb-2"
+            >
+              <Plus className="w-5 h-5" />
+              <span className="font-medium">{t('addTestCredits')}</span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="font-medium">Deconectare</span>
+            </button>
           </div>
-          <button
-            onClick={handleAddTestCredits}
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-400 hover:text-green-300 hover:bg-green-500/30 transition-all mb-2"
-          >
-            <Plus className="w-5 h-5" />
-            <span className="font-medium">{t('addTestCredits')}</span>
-          </button>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all"
-          >
-            <LogOut className="w-5 h-5" />
-            <span className="font-medium">Deconectare</span>
-          </button>
-        </div>
+        )}
       </motion.aside>
 
       {/* Overlay pentru mobile */}
@@ -1164,6 +1203,13 @@ export default function Dashboard() {
                 >
                   <Menu className="w-6 h-6" />
                 </button>
+                <a
+                  href="https://adlence.vercel.app"
+                  className="flex items-center space-x-2 px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-all"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                  <span className="text-sm font-medium">Înapoi pe site</span>
+                </a>
                 <h2 className="text-2xl font-bold text-white capitalize">
                   {menuItems.find((item) => item.id === activeSection)?.label}
                 </h2>
