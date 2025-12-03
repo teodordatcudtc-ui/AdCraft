@@ -85,7 +85,7 @@ export default function WaitingList() {
     })
   }
 
-  const launchDate = new Date('2025-12-03')
+  const launchDate = new Date('2025-01-03')
   const today = new Date()
   const daysUntilLaunch = Math.ceil((launchDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 
@@ -133,7 +133,7 @@ export default function WaitingList() {
               <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-6">
                 <Calendar className="w-4 h-4 text-green-400" />
                 <span className="text-sm text-green-300 font-medium">
-                  Lansare: 3 Decembrie 2025
+                  Lansare: 3 Ianuarie 2025
                 </span>
               </div>
               
