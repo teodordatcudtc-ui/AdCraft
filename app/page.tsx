@@ -382,19 +382,19 @@ export default function Home() {
                 <span className="text-xs text-green-300 font-medium">Powered by AdLence.ai</span>
               </motion.div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight">
                 <span className="text-white">Noul Standard pentru</span>
                 <br />
                 <span className="bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent">
                   Generarea de Reclame
                 </span>
-                <br />
+                <br className="hidden sm:block" />
                 <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                   cu Inteligență Artificială
                 </span>
               </h1>
 
-              <p className="text-lg text-gray-400 mb-8 leading-relaxed max-w-xl">
+              <p className="hidden md:block text-lg text-gray-400 mb-8 leading-relaxed max-w-xl">
                 AdLence.ai este o platformă avansată cu multiple tool-uri de marketing pentru nevoile tale. 
                 De la generarea de reclame și copywriting, la analiză de piață și planificare de conținut - 
                 tot ce ai nevoie pentru a-ți crește business-ul într-un singur loc.
@@ -411,7 +411,7 @@ export default function Home() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-6 py-3 bg-transparent border-2 border-gray-700 hover:border-gray-600 text-white font-semibold rounded-lg transition-all duration-300"
+                  className="px-6 py-3 bg-transparent border-2 border-gray-800 hover:border-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
                 >
                   Vezi Demo
                 </motion.button>
