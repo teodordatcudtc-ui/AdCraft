@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import MouseTrail from '@/components/MouseTrail'
+// import MouseTrail from '@/components/MouseTrail' // Commented out - component not found
 
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -13,7 +13,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
   return (
     <>
       {!isDashboard && !isWaitingList && <Header />}
-      {!isDashboard && !isWaitingList && <MouseTrail />}
+      {/* {!isDashboard && !isWaitingList && <MouseTrail />} */}
       {children}
       {!isDashboard && !isWaitingList && <Footer />}
     </>

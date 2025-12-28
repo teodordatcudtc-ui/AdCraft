@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo, Fragment } from 'react'
+import { useState, useEffect, useRef, useMemo, Fragment, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
@@ -294,7 +294,7 @@ interface CreditTransaction {
   status: 'completed' | 'pending' | 'failed'
 }
 
-export default function Dashboard() {
+function DashboardContent() {
   const searchParams = useSearchParams()
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<any>(null)
@@ -6481,6 +6481,8 @@ export default function Dashboard() {
                                 phone: userProfile.phone || '',
                                 bio: userProfile.bio || '',
                                 avatar_url: userProfile.avatar_url || '',
+                                business_type: userProfile.business_type || '',
+                                business_description: userProfile.business_description || '',
                               })
                             }
                           }}
@@ -6931,5 +6933,28 @@ export default function Dashboard() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <motion.div
+            className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full mx-auto mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          />
+          <p className="text-gray-400">Se încarcă...</p>
+        </motion.div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   )
 }
