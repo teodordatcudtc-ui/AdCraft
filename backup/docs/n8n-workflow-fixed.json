@@ -1,0 +1,434 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.imgbb.com/1/upload",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "={{ $env.IMGBB_API_KEY }}"
+            },
+            {
+              "name": "image",
+              "value": "={{ $json.imageBase64 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [624, 0],
+      "id": "0b8ecb19-714c-4fcf-b9ce-9cddaafd3274",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.KIE_AI_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [1040, 0],
+      "id": "34b68f9c-08b3-42e8-97d8-0b3854a9fcea",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1248, 0],
+      "id": "2b771db0-54d1-453b-8f05-910a2994dfa2",
+      "name": "Wait"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "reclama",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [240, 0],
+      "id": "9c00611c-da74-436f-b2e4-820358ed43e3",
+      "name": "Webhook",
+      "webhookId": "bce84d16-ba07-42c8-9cb4-d1a88f7682a1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const imageObj = item.json.Imagine || item.json.body?.Imagine || item.json.image || item.json.body?.image;\n  const prompt = item.json.body?.prompt || item.json.prompt || '';\n  const options = item.json.body?.options || item.json.options || {};\n  \n  // Funcție helper pentru a extrage doar base64 (fără prefix)\n  const extractBase64 = (str) => {\n    if (!str) return '';\n    if (typeof str !== 'string') return '';\n    if (str.startsWith('data:')) {\n      // Extrage doar partea de base64 după virgulă\n      const parts = str.split(',');\n      return parts.length > 1 ? parts[1] : str;\n    }\n    return str;\n  };\n  \n  let base64Only = '';\n  \n  // Verifică dacă este deja base64 string\n  if (typeof imageObj === 'string') {\n    // imgbb.com vrea DOAR base64, fără prefix \"data:image/...\"\n    base64Only = extractBase64(imageObj);\n  }\n  // Dacă este obiect file, încearcă să accesezi binary data\n  else if (imageObj && typeof imageObj === 'object') {\n    // Verifică dacă există binary data în item\n    const binaryKey = Object.keys(item.binary || {}).find(key => \n      key.toLowerCase().includes('image') || key.toLowerCase().includes('imagine')\n    );\n    \n    if (binaryKey && item.binary[binaryKey]) {\n      // Binary data este deja în format base64 în n8n\n      const binaryData = item.binary[binaryKey];\n      base64Only = binaryData.data; // Deja base64 string\n    }\n    // Dacă obiectul are proprietatea 'data' cu base64\n    else if (imageObj.data) {\n      base64Only = extractBase64(imageObj.data);\n    }\n  }\n  \n  // Procesează opțiunile cu valori default\n  const processedOptions = {\n    aspect_ratio: options.aspect_ratio || '1:1',\n    width: options.width || 1024,\n    height: options.height || 1024,\n    style: options.style || 'professional',\n    negative_prompt: options.negative_prompt || 'blurry, low quality, distorted',\n    guidance_scale: options.guidance_scale || 7.5,\n    num_inference_steps: options.num_inference_steps || 20,\n    resolution: options.resolution || '1K'\n  };\n  \n  return {\n    json: {\n      prompt: prompt,\n      imageBase64: base64Only,\n      options: processedOptions,\n      timestamp: item.json.body?.timestamp || item.json.timestamp\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [448, 0],
+      "id": "eafd781a-648e-4129-914d-0c94088f5421",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "const prompt = $('Code').item.json.prompt || '';\nconst imageUrl = $input.item.json.data.url || '';\nconst options = $('Code').item.json.options || {};\n\n// Validare\nif (!prompt || prompt.trim() === '') {\n  throw new Error('Prompt is required but is empty or null');\n}\n\nif (!imageUrl || imageUrl.trim() === '') {\n  throw new Error('Image URL is required but is empty or null');\n}\n\n// Reformulează promptul pentru a evita filtrarea KIE.AI\nlet sanitizedPrompt = String(prompt).trim()\n  .replace(/reclama/gi, 'advertisement')\n  .replace(/adidasi/gi, 'sneakers')\n  .replace(/adidica/gi, 'sneakers')\n  .replace(/posta/gi, 'post')\n  .replace(/poster/gi, 'poster')\n  .replace(/moderna/gi, 'modern')\n  .replace(/minimalista/gi, 'minimalist')\n  .replace(/banner/gi, 'banner')\n  .replace(/reducere/gi, 'discount')\n  .replace(/euro/gi, 'euros')\n  .replace(/uero/gi, 'euros');\n\n// Adaugă context pozitiv pentru a evita filtrarea\nif (!sanitizedPrompt.toLowerCase().includes('professional') &&\n    !sanitizedPrompt.toLowerCase().includes('commercial')) {\n  sanitizedPrompt = `Professional product photography: ${sanitizedPrompt}. Clean design, commercial photography style, brand-safe content, family-friendly imagery.`;\n}\n\n// Validează resolution\nconst validResolutions = ['1K', '2K'];\nconst resolution = validResolutions.includes(options.resolution)\n  ? options.resolution\n  : '1K';\n\n// Validează aspect_ratio\nconst validAspectRatios = ['1:1', '16:9', '9:16', '4:3'];\nconst aspectRatio = validAspectRatios.includes(options.aspect_ratio)\n  ? options.aspect_ratio\n  : '1:1';\n\n// Construiește JSON-ul în formatul KIE.AI\n// IMPORTANT: image_input este array de URL-uri!\nreturn [{\n  json: {\n    model: \"nano-banana-pro\",\n    callBackUrl: \"\",\n    input: {\n      prompt: sanitizedPrompt,\n      image_input: imageUrl ? [String(imageUrl).trim()] : [],\n      aspect_ratio: aspectRatio,\n      resolution: resolution,\n      output_format: 'png'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [832, 0],
+      "id": "3d8d475d-67cb-4065-877d-1c1a80e25219",
+      "name": "Build KIE.AI Request"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.kie.ai/api/v1/jobs/recordInfo",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.KIE_AI_API_KEY }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [1456, 0],
+      "id": "a733ac85-1b75-4878-a623-fdd6e5f53225",
+      "name": "Get Image1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.state }}",
+                    "rightValue": "success",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "8c5e6c85-cdb8-4231-8a00-849a24cfa328"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "success"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fb6479c3-57ba-4cf3-ae7e-2263b5ace7ab",
+                    "leftValue": "={{ $json.state }}",
+                    "rightValue": "waiting",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "waiting"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a25d832c-e2fd-4fcc-91d4-5dd20f12d680",
+                    "leftValue": "={{ $json.state }}",
+                    "rightValue": "generating",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "generating"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "queuing-condition",
+                    "leftValue": "={{ $json.state }}",
+                    "rightValue": "queuing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "queuing"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fail-condition",
+                    "leftValue": "={{ $json.state }}",
+                    "rightValue": "fail",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "fail"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [2080, -16],
+      "id": "d8391e6d-3c16-4bc4-b699-30869314a3c2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"image_url\": \"{{ $('Parse Result').item.json.firstImageUrl }}\",\n  \"taskId\": \"{{ $('Parse Result').item.json.taskId }}\",\n  \"state\": \"{{ $('Parse Result').item.json.state }}\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [2368, 0],
+      "id": "38e03854-fb5d-48c8-b830-6a66014685b7",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\n\n// Parse resultJson pentru a obține URL-urile generate\nlet imageUrls = [];\nlet firstImageUrl = null;\n\n// Verifică dacă task-ul este completat (state === \"success\")\nif (response.data?.state === \"success\" && response.data?.resultJson) {\n  try {\n    // resultJson este un JSON string, trebuie parsat\n    const resultJson = JSON.parse(response.data.resultJson);\n    \n    // URL-urile generate sunt în resultUrls\n    if (resultJson.resultUrls && Array.isArray(resultJson.resultUrls)) {\n      imageUrls = resultJson.resultUrls;\n      firstImageUrl = imageUrls.length > 0 ? imageUrls[0] : null;\n    }\n    \n    // Dacă nu există resultUrls, verifică alte câmpuri posibile\n    if (imageUrls.length === 0) {\n      if (resultJson.image_url) {\n        imageUrls = [resultJson.image_url];\n        firstImageUrl = resultJson.image_url;\n      } else if (resultJson.imageUrls && Array.isArray(resultJson.imageUrls)) {\n        imageUrls = resultJson.imageUrls;\n        firstImageUrl = imageUrls.length > 0 ? imageUrls[0] : null;\n      }\n    }\n  } catch (e) {\n    console.error('Error parsing resultJson:', e);\n    console.error('resultJson value:', response.data.resultJson);\n  }\n}\n\n// Dacă task-ul este încă în procesare, resultJson va fi gol\n// În acest caz, imageUrls va rămâne array gol și firstImageUrl va fi null\n\nreturn [{\n  json: {\n    code: response.code,\n    message: response.message,\n    taskId: response.data?.taskId,\n    state: response.data?.state,\n    imageUrls: imageUrls,\n    firstImageUrl: firstImageUrl,\n    failCode: response.data?.failCode,\n    failMsg: response.data?.failMsg\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1664, 0],
+      "id": "f38e6754-5e2c-460a-b7d6-29307061cc59",
+      "name": "Parse Result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Build KIE.AI Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build KIE.AI Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image1": {
+      "main": [
+        [
+          {
+            "node": "Parse Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Result": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d69845d8-ec6d-4398-ac67-2fbb6de707c3",
+  "meta": {
+    "instanceId": "9d0f66b5a7a5ae36a1652a03e776bb26a3258ee2f1c12a6f1ed528586c706de2"
+  },
+  "id": "4bzH3z1apKY13lzO",
+  "tags": []
+}
+

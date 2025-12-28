@@ -53,14 +53,6 @@ Dacă funcționează local (`npm run dev`) dar nu funcționează pe Vercel, prob
 
 **Notă**: Dacă nu setezi `N8N_TEXT_WEBHOOK_URL`, se va folosi default-ul: `https://agentie-reclame.app.n8n.cloud/webhook/generate-text`
 
-#### Variabila 6: `N8N_TOOLS_WEBHOOK_URL` (pentru tool-urile text-based)
-- **Key**: `N8N_TOOLS_WEBHOOK_URL`
-- **Value**: URL-ul webhook-ului n8n pentru tool-uri (ex: `https://fitnessapp.app.n8n.cloud/webhook/tools`)
-- **Environment**: ✅ Production, ✅ Preview, ✅ Development
-- Click **Save**
-
-**Notă**: Dacă nu setezi `N8N_TOOLS_WEBHOOK_URL`, se va folosi default-ul: `https://agentie-reclame.app.n8n.cloud/webhook/tools`
-
 ### Pasul 4: Verifică Variabilele Adăugate
 
 După ce ai adăugat toate variabilele, ar trebui să vezi o listă similară cu:
@@ -71,7 +63,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY     [Production, Preview, Development]
 SUPABASE_SERVICE_ROLE_KEY         [Production, Preview, Development]  ← IMPORTANT!
 N8N_WEBHOOK_URL                   [Production, Preview, Development]
 N8N_TEXT_WEBHOOK_URL              [Production, Preview, Development]
-N8N_TOOLS_WEBHOOK_URL             [Production, Preview, Development]  ← NOU!
 ```
 
 ### Pasul 5: Redeployază
@@ -144,7 +135,6 @@ Service role key is not configured
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` este setat în Vercel ⚠️
 - [ ] `N8N_WEBHOOK_URL` este setat în Vercel (pentru generare imagini)
 - [ ] `N8N_TEXT_WEBHOOK_URL` este setat în Vercel (pentru generare text)
-- [ ] `N8N_TOOLS_WEBHOOK_URL` este setat în Vercel (pentru tool-uri text-based) ← NOU!
 - [ ] Toate variabilele sunt bifate pentru **Production**
 - [ ] Ai făcut **Redeploy** după adăugarea variabilelor
 - [ ] Cheia `SUPABASE_SERVICE_ROLE_KEY` începe cu `sb_secret_...`

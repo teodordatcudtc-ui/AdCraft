@@ -23,9 +23,6 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
     language TEXT DEFAULT 'ro',
     theme TEXT DEFAULT 'dark',
     email_notifications BOOLEAN DEFAULT true,
-    content_calendar JSONB, -- Calendar de conținut (30 de zile) - salvat din tool-ul Planificare de Conținut
-    business_type TEXT, -- Tipul de business (ex: "Service auto", "Restaurant", "E-commerce", etc.)
-    business_description TEXT, -- Descrierea afacerii pentru context în generări AI
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

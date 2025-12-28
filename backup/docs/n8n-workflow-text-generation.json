@@ -1,0 +1,145 @@
+{
+  "name": "Generate Ad Text (Copywriting)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-text",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [240, 300],
+      "id": "webhook-text-trigger",
+      "name": "Webhook",
+      "webhookId": "generate-text-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  // Extrage prompt-ul din diferite locații posibile\n  const prompt = item.json.body?.prompt || item.json.prompt || '';\n  \n  // Extrage opțiuni suplimentare (dacă există)\n  const textOptions = item.json.body?.textOptions || item.json.textOptions || {};\n  \n  // Validare\n  if (!prompt || prompt.trim() === '') {\n    throw new Error('Prompt is required for text generation');\n  }\n  \n  // Construiește prompt-ul pentru copywriting\n  // Adaugă instrucțiuni clare pentru AI să genereze text publicitar\n  const copywritingPrompt = `Creează un text publicitar profesional și atractiv pentru următorul produs/serviciu:\n\n${String(prompt).trim()}\n\nCerințe:\n- Text scurt și impactant (maxim 150-200 cuvinte)\n- Ton profesional dar accesibil\n- Include un call-to-action clar\n- Evită clișee excesive\n- Focalizat pe beneficii pentru client\n- Adaptat pentru piața românească\n\nGenerează DOAR textul publicitar, fără explicații suplimentare.`;\n  \n  return {\n    json: {\n      prompt: copywritingPrompt,\n      originalPrompt: prompt,\n      maxTokens: textOptions.maxTokens || 300,\n      temperature: textOptions.temperature || 0.8,\n      model: textOptions.model || 'gpt-4o-mini',\n      timestamp: item.json.body?.timestamp || item.json.timestamp || new Date().toISOString()\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "id": "build-prompt",
+      "name": "Build Copywriting Prompt"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.OPENAI_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"{{ $json.model }}\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Ești un copywriter profesionist specializat în crearea de texte publicitare atractive și eficiente pentru piața românească. Textele tale sunt concise, impactante și orientate către conversie.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.prompt }}\"\n    }\n  ],\n  \"max_tokens\": {{ $json.maxTokens }},\n  \"temperature\": {{ $json.temperature }},\n  \"top_p\": 1,\n  \"frequency_penalty\": 0,\n  \"presence_penalty\": 0\n}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [680, 300],
+      "id": "openai-request",
+      "name": "OpenAI API Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\n\n// Extrage textul generat din răspunsul OpenAI\nlet generatedText = '';\n\nif (response.choices && response.choices.length > 0) {\n  const firstChoice = response.choices[0];\n  if (firstChoice.message && firstChoice.message.content) {\n    generatedText = firstChoice.message.content.trim();\n  }\n}\n\n// Dacă nu s-a găsit text, verifică alte locații posibile\nif (!generatedText) {\n  if (response.content) {\n    generatedText = response.content.trim();\n  } else if (response.text) {\n    generatedText = response.text.trim();\n  } else if (response.data?.content) {\n    generatedText = response.data.content.trim();\n  }\n}\n\n// Dacă încă nu s-a găsit, folosește întregul răspuns ca fallback\nif (!generatedText && response.choices) {\n  generatedText = JSON.stringify(response, null, 2);\n}\n\nreturn [{\n  json: {\n    success: true,\n    text: generatedText,\n    model: response.model || 'unknown',\n    usage: response.usage || {},\n    originalPrompt: $('Build Copywriting Prompt').item.json.originalPrompt,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300],
+      "id": "parse-response",
+      "name": "Parse OpenAI Response"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"text\": \"{{ $json.text }}\",\n  \"model\": \"{{ $json.model }}\",\n  \"usage\": {{ JSON.stringify($json.usage) }}\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [1120, 300],
+      "id": "respond-webhook",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build Copywriting Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Copywriting Prompt": {
+      "main": [
+        [
+          {
+            "node": "OpenAI API Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI API Request": {
+      "main": [
+        [
+          {
+            "node": "Parse OpenAI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse OpenAI Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "text-generation-v1",
+  "meta": {
+    "instanceId": "text-generation-workflow"
+  },
+  "id": "text-generation-workflow",
+  "tags": []
+}
+
