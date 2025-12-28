@@ -375,14 +375,14 @@ export default function Home() {
               transition={{ duration: 0.6 }}
             >
               <motion.div
-                className="inline-flex items-center space-x-2 px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full mb-6"
+                className="inline-flex items-center space-x-2 px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full mb-6 mx-auto md:mx-0"
                 whileHover={{ scale: 1.05 }}
               >
                 <Sparkles className="w-3 h-3 text-green-400" />
                 <span className="text-xs text-green-300 font-medium">Powered by AdLence.ai</span>
               </motion.div>
 
-              <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight text-center md:text-left">
                 <span className="text-white">Noul Standard pentru</span>
                 <br />
                 <span className="bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent">
@@ -394,13 +394,16 @@ export default function Home() {
                 </span>
               </h1>
 
+              <p className="md:hidden text-base text-gray-400 mb-6 leading-relaxed text-center">
+                Platformă avansată cu tool-uri de marketing pentru a-ți crește business-ul.
+              </p>
               <p className="hidden md:block text-lg text-gray-400 mb-8 leading-relaxed max-w-xl">
                 AdLence.ai este o platformă avansată cu multiple tool-uri de marketing pentru nevoile tale. 
                 De la generarea de reclame și copywriting, la analiză de piață și planificare de conținut - 
                 tot ce ai nevoie pentru a-ți crește business-ul într-un singur loc.
               </p>
 
-              <div className="flex flex-wrap gap-4 mb-8">
+              <div className="flex flex-wrap gap-4 mb-8 justify-center md:justify-start">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -418,7 +421,7 @@ export default function Home() {
               </div>
 
               {/* Stats */}
-              <div className="flex flex-wrap gap-6 mt-8">
+              <div className="flex flex-wrap gap-6 mt-8 justify-center md:justify-start">
                 {stats.map((stat, index) => {
                   const Icon = stat.icon
                   return (
