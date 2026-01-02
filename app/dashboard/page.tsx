@@ -1911,14 +1911,14 @@ function DashboardContent() {
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             {isLoading ? (
               <>
-                <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                <span className="text-sm md:text-base">{settingsFormData.language === 'en' ? 'Processing...' : 'Se procesează...'}</span>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>{settingsFormData.language === 'en' ? 'Processing...' : 'Se procesează...'}</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 md:w-5 md:h-5" />
-                <span className="text-sm md:text-base">{settingsFormData.language === 'en' ? 'Generate Strategy' : 'Generează Strategia'}</span>
-                <span className="hidden sm:inline ml-2 px-2 py-1 bg-white/20 rounded-lg text-xs font-semibold">
+                <Sparkles className="w-5 h-5" />
+                <span>{settingsFormData.language === 'en' ? 'Generate Strategy' : 'Generează Strategia'}</span>
+                <span className="ml-2 px-2 py-1 bg-white/20 rounded-lg text-xs font-semibold">
                   ({TOOL_COSTS['strategie-client']} {settingsFormData.language === 'en' ? 'credits' : 'credite'})
                 </span>
               </>
@@ -2197,13 +2197,13 @@ function DashboardContent() {
             {isLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                <span className="text-sm md:text-base">{settingsFormData.language === 'en' ? 'Processing...' : 'Se procesează...'}</span>
+                <span>{settingsFormData.language === 'en' ? 'Processing...' : 'Se procesează...'}</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 md:w-5 md:h-5" />
-                <span className="text-sm md:text-base">{settingsFormData.language === 'en' ? 'Analyze Market' : 'Analizează Piața'}</span>
-                <span className="hidden sm:inline ml-2 px-2 py-1 bg-white/20 rounded-lg text-xs font-semibold">
+                <Sparkles className="w-5 h-5" />
+                <span>{settingsFormData.language === 'en' ? 'Analyze Market' : 'Analizează Piața'}</span>
+                <span className="ml-2 px-2 py-1 bg-white/20 rounded-lg text-xs font-semibold">
                   ({TOOL_COSTS['analiza-piata']} {settingsFormData.language === 'en' ? 'credits' : 'credite'})
                 </span>
               </>
@@ -2474,14 +2474,14 @@ function DashboardContent() {
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             {isLoading ? (
               <>
-                <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                <span className="text-sm md:text-base">{settingsFormData.language === 'en' ? 'Processing...' : 'Se procesează...'}</span>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>{settingsFormData.language === 'en' ? 'Processing...' : 'Se procesează...'}</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 md:w-5 md:h-5" />
-                <span className="text-sm md:text-base">{settingsFormData.language === 'en' ? 'Generate Copywriting' : 'Generează Copywriting'}</span>
-                <span className="hidden sm:inline ml-2 px-2 py-1 bg-white/20 rounded-lg text-xs font-semibold">
+                <Sparkles className="w-5 h-5" />
+                <span>{settingsFormData.language === 'en' ? 'Generate Copywriting' : 'Generează Copywriting'}</span>
+                <span className="ml-2 px-2 py-1 bg-white/20 rounded-lg text-xs font-semibold">
                   ({TOOL_COSTS['copywriting']} {settingsFormData.language === 'en' ? 'credits' : 'credite'})
                 </span>
               </>
@@ -2596,14 +2596,14 @@ function DashboardContent() {
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             {isLoading ? (
               <>
-                <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                <span className="text-sm md:text-base">{settingsFormData.language === 'en' ? 'Processing...' : 'Se procesează...'}</span>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>{settingsFormData.language === 'en' ? 'Processing...' : 'Se procesează...'}</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 md:w-5 md:h-5" />
-                <span className="text-sm md:text-base">{settingsFormData.language === 'en' ? 'Generate Plan' : 'Generează Planul'}</span>
-                <span className="hidden sm:inline ml-2 px-2 py-1 bg-white/20 rounded-lg text-xs font-semibold">
+                <Sparkles className="w-5 h-5" />
+                <span>{settingsFormData.language === 'en' ? 'Generate Plan' : 'Generează Planul'}</span>
+                <span className="ml-2 px-2 py-1 bg-white/20 rounded-lg text-xs font-semibold">
                   ({TOOL_COSTS['planificare-conținut']} {settingsFormData.language === 'en' ? 'credits' : 'credite'})
                 </span>
               </>
@@ -2990,14 +2990,14 @@ function DashboardContent() {
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             {isLoading ? (
               <>
-                <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                <span className="text-sm md:text-base">{settingsFormData.language === 'en' ? 'Processing...' : 'Se procesează...'}</span>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>{settingsFormData.language === 'en' ? 'Processing...' : 'Se procesează...'}</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 md:w-5 md:h-5" />
-                <span className="text-sm md:text-base">{settingsFormData.language === 'en' ? 'Generate Video Strategy' : 'Generează Strategia Video'}</span>
-                <span className="hidden sm:inline ml-2 px-2 py-1 bg-white/20 rounded-lg text-xs font-semibold">
+                <Sparkles className="w-5 h-5" />
+                <span>{settingsFormData.language === 'en' ? 'Generate Video Strategy' : 'Generează Strategia Video'}</span>
+                <span className="ml-2 px-2 py-1 bg-white/20 rounded-lg text-xs font-semibold">
                   ({TOOL_COSTS['strategie-video']} {settingsFormData.language === 'en' ? 'credits' : 'credite'})
                 </span>
               </>
@@ -4349,20 +4349,20 @@ function DashboardContent() {
                   )}
                 </div>
                 {/* Credits Badge & Buy Button */}
-                <div className="flex items-center space-x-2 md:space-x-3">
-                  <div className="flex items-center space-x-1.5 md:space-x-2 px-2 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-lg">
-                    <Coins className="w-4 h-4 md:w-5 md:h-5 text-purple-400" />
-                    <span className="text-xs md:text-sm font-bold text-white">{currentCredits}</span>
-                    <span className="hidden md:inline text-xs text-gray-400">credite</span>
+                <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                  <div className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-lg flex-shrink-0">
+                    <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0" />
+                    <span className="text-sm font-bold text-white whitespace-nowrap">{currentCredits}</span>
+                    <span className="hidden sm:inline text-xs text-gray-400">credite</span>
                   </div>
                   <motion.button
                     onClick={() => router.push('/preturi')}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="flex items-center gap-1.5 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl"
+                    className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl flex-shrink-0"
                   >
-                    <ShoppingCart className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                    <span className="text-xs md:text-sm">{settingsFormData.language === 'en' ? 'Buy' : 'Cumpără'}</span>
+                    <ShoppingCart className="w-4 h-4 flex-shrink-0" />
+                    <span className="hidden sm:inline text-sm">{settingsFormData.language === 'en' ? 'Buy Credits' : 'Cumpără Credite'}</span>
                   </motion.button>
                 </div>
               </div>
@@ -4489,83 +4489,86 @@ function DashboardContent() {
                       .filter(Boolean) as { id: ToolId, name: string, nameEn: string }[]
                   }
                   
-                  // Dacă este tool-ul "Design Publicitar", folosim același layout ca celelalte tool-uri
+                  // Dacă este tool-ul "Design Publicitar", afișăm direct formularul de generare reclamă
                   if (activeTool === 'design-publicitar') {
                     const toolTips = getToolTips(activeTool)
                     const nextSteps = getNextSteps(activeTool)
                     
                     return (
                       <div className="w-full flex justify-center">
-                        <div id="tool-interface" className="w-full max-w-6xl space-y-6">
-                          {/* Header îmbunătățit - similar cu celelalte tool-uri */}
-                          <div className="relative">
-                            {/* Background decorative animat */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-pink-600/10 to-blue-600/10 rounded-2xl blur-2xl animate-pulse"></div>
+                        <div id="tool-interface" className="w-full max-w-4xl space-y-6">
+                        {/* Header îmbunătățit pentru Design Publicitar */}
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-pink-600/10 to-blue-600/10 rounded-2xl blur-2xl animate-pulse"></div>
+                          <div className="relative bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-4 md:p-6 lg:p-8 shadow-2xl overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl"></div>
+                            <div className="absolute bottom-0 left-0 w-48 h-48 bg-pink-500/5 rounded-full blur-3xl"></div>
                             
-                            <div className="relative bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-4 md:p-6 lg:p-8 shadow-2xl overflow-hidden">
-                              {/* Decorative elements */}
-                              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl"></div>
-                              <div className="absolute bottom-0 left-0 w-48 h-48 bg-pink-500/5 rounded-full blur-3xl"></div>
-                              
-                              {/* Back Button */}
-                              <button
-                                onClick={() => {
-                                  setActiveTool(null)
-                                  setPrompt('')
-                                  setImage(null)
-                                  setImagePreview(null)
-                                  setGeneratedImageUrl(null)
-                                  setGeneratedImageError(null)
-                                  setShowAdvanced(false)
-                                }}
-                                className="relative flex items-center space-x-2 text-gray-400 hover:text-white mb-4 md:mb-6 transition-all hover:translate-x-[-4px] group z-10"
-                              >
-                                <ArrowLeft className="w-4 h-4 group-hover:translate-x-[-2px] transition-transform" />
-                                <span className="text-sm font-medium">
-                                  {settingsFormData.language === 'en' ? '← Back to Tools' : '← Înapoi la Tooluri'}
-                                </span>
-                              </button>
+                            <button
+                              onClick={() => {
+                                setActiveTool(null)
+                                setPrompt('')
+                                setImage(null)
+                                setImagePreview(null)
+                                setGeneratedImageUrl(null)
+                                setGeneratedImageError(null)
+                                setShowAdvanced(false)
+                              }}
+                              className="relative flex items-center space-x-2 text-gray-400 hover:text-white mb-4 md:mb-6 transition-all hover:translate-x-[-4px] group z-10"
+                            >
+                              <ArrowLeft className="w-4 h-4 group-hover:translate-x-[-2px] transition-transform" />
+                              <span className="text-sm font-medium">
+                                {settingsFormData.language === 'en' ? '← Back to Tools' : '← Înapoi la Tooluri'}
+                              </span>
+                            </button>
 
-                              {/* Header cu icon și descriere */}
-                              <div className="relative flex flex-col md:flex-row items-start gap-3 md:gap-5 lg:gap-6 z-10">
-                                <div className="relative">
-                                  <motion.div
-                                    animate={{ rotate: [0, 5, -5, 0] }}
-                                    transition={{ duration: 4, repeat: Infinity, repeatDelay: 2 }}
-                                    className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-xl blur-lg"
-                                  ></motion.div>
-                                  <div className="relative w-14 h-14 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center border border-purple-500/30 shadow-lg">
-                                    <ToolIcon className="w-7 h-7 md:w-10 md:h-10 lg:w-12 lg:h-12 text-purple-400" />
+                            <div className="relative flex flex-row items-center gap-3 md:gap-5 lg:gap-6 z-10">
+                              <div className="relative flex-shrink-0">
+                                <motion.div
+                                  animate={{ rotate: [0, 5, -5, 0] }}
+                                  transition={{ duration: 4, repeat: Infinity, repeatDelay: 2 }}
+                                  className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-xl blur-lg"
+                                ></motion.div>
+                                <div className="relative w-12 h-12 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center border border-purple-500/30 shadow-lg">
+                                  <ToolIcon className="w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12 text-purple-400" />
+                                </div>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2 flex-wrap">
+                                  <h3 className="text-lg md:text-2xl lg:text-3xl font-bold text-white bg-gradient-to-r from-white via-purple-100 to-pink-100 bg-clip-text text-transparent">
+                                    {toolName}
+                                  </h3>
+                                  <div className="px-2 md:px-3 py-0.5 md:py-1 bg-purple-500/20 border border-purple-400/30 rounded-lg">
+                                    <span className="text-[10px] md:text-xs font-semibold text-purple-300">
+                                      {IMAGE_GENERATION_COST} {settingsFormData.language === 'en' ? 'credits' : 'credite'}
+                                    </span>
                                   </div>
                                 </div>
-                                <div className="flex-1 pt-0 md:pt-1">
-                                  <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
-                                    <h3 className="text-lg md:text-2xl lg:text-3xl font-bold text-white bg-gradient-to-r from-white via-purple-100 to-pink-100 bg-clip-text text-transparent">
-                                      {toolName}
-                                    </h3>
-                                    <div className="px-2 md:px-3 py-0.5 md:py-1 bg-purple-500/20 border border-purple-400/30 rounded-lg">
-                                      <span className="text-[10px] md:text-xs font-semibold text-purple-300">
-                                        {IMAGE_GENERATION_COST} {settingsFormData.language === 'en' ? 'credits' : 'credite'}
-                                      </span>
-                                    </div>
+                                <p className="text-gray-300 text-sm md:text-base lg:text-lg leading-relaxed mb-2 md:mb-3">{toolDescription}</p>
+                                {toolTips.length > 0 && (
+                                  <div className="flex items-center gap-2 text-xs md:text-sm text-purple-400/80">
+                                    <Sparkles className="w-3 h-3 md:w-4 md:h-4" />
+                                    <span className="font-medium">
+                                      {settingsFormData.language === 'en' 
+                                        ? 'Pro tip: ' + toolTips[0].replace(/^[^\s]+\s/, '')
+                                        : 'Sfat pro: ' + toolTips[0].replace(/^[^\s]+\s/, '')}
+                                    </span>
                                   </div>
-                                  <p className="text-gray-300 text-sm md:text-base lg:text-lg leading-relaxed mb-2 md:mb-3">{toolDescription}</p>
-                                  
-                                  {/* Quick tips preview */}
-                                  {toolTips.length > 0 && (
-                                    <div className="flex items-center gap-2 text-xs md:text-sm text-purple-400/80">
-                                      <Sparkles className="w-3 h-3 md:w-4 md:h-4" />
-                                      <span className="font-medium">
-                                        {settingsFormData.language === 'en' 
-                                          ? 'Pro tip: ' + toolTips[0].replace(/^[^\s]+\s/, '')
-                                          : 'Sfat pro: ' + toolTips[0].replace(/^[^\s]+\s/, '')}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
+                                )}
                               </div>
                             </div>
                           </div>
+                        </div>
+
+                        {/* Formular și Sidebar */}
+                        {(toolTips.length > 0 || nextSteps.length > 0) ? (
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Main Interface */}
+                            <div className="lg:col-span-2">
+                              <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6 md:p-8 shadow-xl">
+                        
+                        {/* Formular de generare reclamă - afișat direct */}
+                        <form onSubmit={handleSubmit} className="space-y-5">
                           {/* Prompt Input */}
                           <div className="relative">
                             <label htmlFor="prompt" className="block text-sm font-semibold text-white mb-3 flex items-center gap-2">
@@ -4851,321 +4854,16 @@ function DashboardContent() {
                                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </motion.svg>
-                                <span className="text-sm md:text-base">Se generează...</span>
+                                <span>Se generează...</span>
                               </>
                             ) : (
                               <>
-                                <Sparkles className="w-4 h-4 md:w-5 md:h-5" />
-                                <span className="text-sm md:text-base">{t('generateAd')} <span className="hidden sm:inline">({IMAGE_GENERATION_COST} {t('creditsCost')})</span></span>
+                                <Sparkles className="w-5 h-5" />
+                                <span>{t('generateAd')} ({IMAGE_GENERATION_COST} {t('creditsCost')})</span>
                               </>
                             )}
                           </motion.button>
                         </form>
-                        </div>
-
-                        {/* Tips & Next Steps Sidebar - ca la celelalte tool-uri */}
-                        {(toolTips.length > 0 || nextSteps.length > 0) && (
-                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Main Interface */}
-                            <div className="lg:col-span-2">
-                              <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6 md:p-8 shadow-xl">
-                                {/* Formular de generare reclamă */}
-                                <form onSubmit={handleSubmit} className="space-y-5">
-                                  {/* Prompt Input */}
-                                  <div className="relative">
-                                    <label htmlFor="prompt" className="block text-sm font-semibold text-white mb-3 flex items-center gap-2">
-                                      <Sparkles className="w-4 h-4 text-blue-400" />
-                                      {settingsFormData.language === 'en' ? 'Describe Product' : 'Descrie produsul'}
-                                    </label>
-                                    <div className="relative">
-                                      <input
-                                        type="text"
-                                        id="prompt"
-                                        value={prompt}
-                                        onChange={(e) => setPrompt(e.target.value)}
-                                        placeholder={settingsFormData.language === 'en' ? 'Ex: premium organic tea, eco-friendly packaging...' : 'Ex: ceai organic premium, ambalaj eco-friendly...'}
-                                        className="relative w-full px-5 py-3.5 bg-gray-800/80 border-2 border-blue-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-400 transition-all text-base font-medium shadow-lg shadow-blue-500/20"
-                                        required
-                                      />
-                                    </div>
-                                  </div>
-
-                                  {/* Image Upload */}
-                                  <div className="relative">
-                                    <label htmlFor="image" className="block text-sm font-semibold text-white mb-3 flex items-center gap-2">
-                                      <ImageIcon className="w-4 h-4 text-purple-400" />
-                                      {settingsFormData.language === 'en' ? 'Product Photo' : 'Poza produsului'} <span className="text-xs text-gray-400 font-normal">({settingsFormData.language === 'en' ? 'optional' : 'opțional'})</span>
-                                    </label>
-                                    {imagePreview ? (
-                                      <motion.div
-                                        initial={{ scale: 0.9, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        className="relative group rounded-lg overflow-hidden border-2 border-purple-500/50 shadow-lg shadow-purple-500/20"
-                                      >
-                                        <img
-                                          src={imagePreview}
-                                          alt="Preview"
-                                          className="w-full h-52 object-cover"
-                                        />
-                                        <motion.button
-                                          type="button"
-                                          whileHover={{ scale: 1.1 }}
-                                          whileTap={{ scale: 0.9 }}
-                                          onClick={() => {
-                                            setImage(null)
-                                            setImagePreview(null)
-                                          }}
-                                          className="absolute top-3 right-3 px-4 py-2 bg-red-500/90 hover:bg-red-500 text-white text-sm font-semibold rounded-lg transition-colors shadow-lg"
-                                        >
-                                          {settingsFormData.language === 'en' ? 'Delete' : 'Șterge'}
-                                        </motion.button>
-                                      </motion.div>
-                                    ) : (
-                                      <label className="relative flex items-center justify-center w-full h-16 border-2 border-dashed border-purple-500/50 rounded-lg cursor-pointer bg-gray-800/60 hover:bg-gray-800/80 transition-all group shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 hover:border-purple-400">
-                                        <div className="flex items-center space-x-3">
-                                          <ImageIcon className="w-6 h-6 text-purple-400 group-hover:text-purple-300 transition-colors" />
-                                          <p className="text-sm text-gray-300 group-hover:text-white font-medium transition-colors">
-                                            <span className="font-semibold">{settingsFormData.language === 'en' ? 'Click to upload' : 'Click pentru a încărca'}</span> {settingsFormData.language === 'en' ? 'or drag & drop' : 'sau drag & drop'}
-                                          </p>
-                                        </div>
-                                        <input
-                                          id="image"
-                                          type="file"
-                                          accept="image/*"
-                                          onChange={handleImageChange}
-                                          className="hidden"
-                                        />
-                                      </label>
-                                    )}
-                                  </div>
-
-                                  {/* Advanced Options */}
-                                  <div className="relative">
-                                    <motion.button
-                                      type="button"
-                                      onClick={() => setShowAdvanced(!showAdvanced)}
-                                      className="w-full flex items-center justify-between px-4 py-3 bg-gray-800/60 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg transition-all"
-                                    >
-                                      <div className="flex items-center gap-2">
-                                        <Settings className="w-4 h-4 text-gray-400" />
-                                        <span className="text-sm font-semibold text-white">{settingsFormData.language === 'en' ? 'Advanced Options' : 'Opțiuni avansate'}</span>
-                                      </div>
-                                      {showAdvanced ? (
-                                        <ChevronUp className="w-4 h-4 text-gray-400" />
-                                      ) : (
-                                        <ChevronDown className="w-4 h-4 text-gray-400" />
-                                      )}
-                                    </motion.button>
-
-                                    <AnimatePresence>
-                                      {showAdvanced && (
-                                        <motion.div
-                                          initial={{ height: 0, opacity: 0 }}
-                                          animate={{ height: 'auto', opacity: 1 }}
-                                          exit={{ height: 0, opacity: 0 }}
-                                          transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                          className="overflow-hidden"
-                                        >
-                                          <div className="mt-4 space-y-4 p-4 bg-gray-800/40 rounded-lg border border-gray-700/30">
-                                            {/* Aspect Ratio Presets */}
-                                            <div>
-                                              <label className="block text-xs font-semibold text-gray-300 mb-3">Aspect Ratio</label>
-                                              <div className="grid grid-cols-2 gap-3">
-                                                {(Object.keys(ASPECT_RATIO_PRESETS) as AspectRatio[]).map((ratio) => {
-                                                  const preset = ASPECT_RATIO_PRESETS[ratio]
-                                                  const isSelected = options.aspectRatio === ratio
-                                                  return (
-                                                    <motion.button
-                                                      key={ratio}
-                                                      type="button"
-                                                      onClick={() => setOptions({ ...options, aspectRatio: ratio })}
-                                                      whileHover={{ scale: 1.02 }}
-                                                      whileTap={{ scale: 0.98 }}
-                                                      className={`relative p-4 rounded-lg border-2 transition-all ${
-                                                        isSelected
-                                                          ? 'border-blue-500 bg-blue-500/20'
-                                                          : 'border-gray-700/50 bg-gray-800/60 hover:border-gray-600/50'
-                                                      }`}
-                                                    >
-                                                      <div className="mb-3 flex items-center justify-center">
-                                                        <div
-                                                          className={`${preset.previewClass} ${
-                                                            isSelected
-                                                              ? 'bg-gradient-to-br from-blue-500/30 to-purple-500/30 border-2 border-blue-400/50'
-                                                              : 'bg-gradient-to-br from-gray-700/50 to-gray-800/50 border border-gray-600/50'
-                                                          } rounded transition-all shadow-lg`}
-                                                        />
-                                                      </div>
-                                                      <div className="text-center">
-                                                        <div className="flex items-center justify-center gap-2 mb-1">
-                                                          <span className={`text-sm font-bold ${isSelected ? 'text-blue-400' : 'text-white'}`}>
-                                                            {preset.label}
-                                                          </span>
-                                                          {isSelected && (
-                                                            <Check className="w-4 h-4 text-blue-400" />
-                                                          )}
-                                                        </div>
-                                                        <p className="text-xs text-gray-400 mb-1">{preset.description}</p>
-                                                        <p className="text-xs text-gray-500">
-                                                          {preset.width} × {preset.height}px
-                                                        </p>
-                                                      </div>
-                                                    </motion.button>
-                                                  )
-                                                })}
-                                              </div>
-                                            </div>
-
-                                            {/* Style */}
-                                            <div>
-                                              <label className="block text-xs font-semibold text-gray-300 mb-2">{settingsFormData.language === 'en' ? 'Style' : 'Stil'}</label>
-                                              <select
-                                                value={options.style}
-                                                onChange={(e) => setOptions({ ...options, style: e.target.value })}
-                                                className="w-full px-3 py-2 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50"
-                                              >
-                                                <option value="professional">{settingsFormData.language === 'en' ? 'Professional' : 'Profesional'}</option>
-                                                <option value="artistic">{settingsFormData.language === 'en' ? 'Artistic' : 'Artistic'}</option>
-                                                <option value="modern">{settingsFormData.language === 'en' ? 'Modern' : 'Modern'}</option>
-                                                <option value="vintage">{settingsFormData.language === 'en' ? 'Vintage' : 'Vintage'}</option>
-                                                <option value="minimalist">{settingsFormData.language === 'en' ? 'Minimalist' : 'Minimalist'}</option>
-                                                <option value="bold">{settingsFormData.language === 'en' ? 'Bold & Colorful' : 'Bold & Colorful'}</option>
-                                              </select>
-                                            </div>
-
-                                            {/* Negative Prompt */}
-                                            <div>
-                                              <label className="block text-xs font-semibold text-gray-300 mb-2">Negative Prompt</label>
-                                              <input
-                                                type="text"
-                                                value={options.negativePrompt}
-                                                onChange={(e) => setOptions({ ...options, negativePrompt: e.target.value })}
-                                                placeholder="blurry, low quality, distorted"
-                                                className="w-full px-3 py-2 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50"
-                                              />
-                                            </div>
-
-                                            {/* Guidance Scale */}
-                                            <div>
-                                              <label className="block text-xs font-semibold text-gray-300 mb-2">
-                                                Guidance Scale: {options.guidanceScale}
-                                              </label>
-                                              <input
-                                                type="range"
-                                                min="1"
-                                                max="20"
-                                                step="0.5"
-                                                value={options.guidanceScale}
-                                                onChange={(e) => setOptions({ ...options, guidanceScale: parseFloat(e.target.value) })}
-                                                className="w-full"
-                                              />
-                                              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                                <span>{settingsFormData.language === 'en' ? 'Less creative' : 'Mai puțin creativ'}</span>
-                                                <span>{settingsFormData.language === 'en' ? 'More creative' : 'Mai creativ'}</span>
-                                              </div>
-                                            </div>
-
-                                            {/* Num Inference Steps */}
-                                            <div>
-                                              <label className="block text-xs font-semibold text-gray-300 mb-2">
-                                                {settingsFormData.language === 'en' ? 'Quality (Steps)' : 'Calitate (Steps)'}: {options.numInferenceSteps}
-                                              </label>
-                                              <input
-                                                type="range"
-                                                min="10"
-                                                max="50"
-                                                step="5"
-                                                value={options.numInferenceSteps}
-                                                onChange={(e) => setOptions({ ...options, numInferenceSteps: parseInt(e.target.value) })}
-                                                className="w-full"
-                                              />
-                                              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                                <span>{settingsFormData.language === 'en' ? 'Fast' : 'Rapid'}</span>
-                                                <span>{settingsFormData.language === 'en' ? 'Better quality' : 'Mai bună calitate'}</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
-                                  </div>
-
-                                  {/* Cost display */}
-                                  <div className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-sm text-gray-300">{settingsFormData.language === 'en' ? 'Cost:' : 'Cost:'}</span>
-                                      <span className="text-lg font-bold text-purple-400">
-                                        {IMAGE_GENERATION_COST} {settingsFormData.language === 'en' ? 'credits' : 'credite'}
-                                      </span>
-                                    </div>
-                                    <p className="text-xs text-gray-500 mt-1">{settingsFormData.language === 'en' ? 'Image generation' : 'Generare imagine'}</p>
-                                  </div>
-
-                                  {/* Error Display */}
-                                  {generatedImageError && (
-                                    <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                                      <p className="text-red-400 text-sm">{generatedImageError}</p>
-                                    </div>
-                                  )}
-
-                                  {/* Generated Image Display */}
-                                  {generatedImageUrl && (
-                                    <div className="space-y-2">
-                                      <div className="relative rounded-lg border-2 border-purple-500/50 shadow-lg overflow-hidden bg-gray-800/50">
-                                        <img 
-                                          src={`/api/proxy-image?url=${encodeURIComponent(generatedImageUrl)}`}
-                                          alt="Generated ad" 
-                                          className="w-full h-auto"
-                                          onError={(e) => {
-                                            console.error('Image load error, trying direct URL:', generatedImageUrl)
-                                            const target = e.target as HTMLImageElement
-                                            target.src = generatedImageUrl
-                                          }}
-                                          crossOrigin="anonymous"
-                                        />
-                                      </div>
-                                      <button
-                                        type="button"
-                                        onClick={() => window.open(generatedImageUrl, '_blank')}
-                                        className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg flex items-center justify-center gap-2"
-                                      >
-                                        <Download className="w-4 h-4" />
-                                        {settingsFormData.language === 'en' ? 'Download' : 'Descarcă'}
-                                      </button>
-                                    </div>
-                                  )}
-
-                                  {/* Submit Button */}
-                                  <motion.button
-                                    type="submit"
-                                    disabled={isLoading || currentCredits < IMAGE_GENERATION_COST || !prompt.trim()}
-                                    whileHover={{ scale: isLoading ? 1 : 1.02, y: -2 }}
-                                    whileTap={{ scale: isLoading ? 1 : 0.98 }}
-                                    className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-500 hover:via-purple-500 hover:to-pink-500 text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl shadow-purple-500/50 flex items-center justify-center space-x-2 relative overflow-hidden group"
-                                  >
-                                    {isLoading ? (
-                                      <>
-                                        <motion.svg
-                                          className="animate-spin h-5 w-5 text-white"
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          fill="none"
-                                          viewBox="0 0 24 24"
-                                          animate={{ rotate: 360 }}
-                                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                                        >
-                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </motion.svg>
-                                        <span className="text-sm md:text-base">{settingsFormData.language === 'en' ? 'Generating...' : 'Se generează...'}</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Sparkles className="w-4 h-4 md:w-5 md:h-5" />
-                                        <span className="text-sm md:text-base">{t('generateAd')} <span className="hidden sm:inline">({IMAGE_GENERATION_COST} {t('creditsCost')})</span></span>
-                                      </>
-                                    )}
-                                  </motion.button>
-                                </form>
                               </div>
                             </div>
 
@@ -5252,6 +4950,306 @@ function DashboardContent() {
                               )}
                             </div>
                           </div>
+                        ) : (
+                          <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6 md:p-8 shadow-xl">
+                            {/* Formular de generare reclamă - afișat direct */}
+                            <form onSubmit={handleSubmit} className="space-y-5">
+                              {/* Prompt Input */}
+                              <div className="relative">
+                                <label htmlFor="prompt" className="block text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                                  <Sparkles className="w-4 h-4 text-blue-400" />
+                                  Descrie produsul
+                                </label>
+                                <div className="relative">
+                                  <input
+                                    type="text"
+                                    id="prompt"
+                                    value={prompt}
+                                    onChange={(e) => setPrompt(e.target.value)}
+                                    placeholder="Ex: ceai organic premium, ambalaj eco-friendly..."
+                                    className="relative w-full px-5 py-3.5 bg-gray-800/80 border-2 border-blue-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-400 transition-all text-base font-medium shadow-lg shadow-blue-500/20"
+                                    required
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Image Upload */}
+                              <div className="relative">
+                                <label htmlFor="image" className="block text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                                  <ImageIcon className="w-4 h-4 text-purple-400" />
+                                  Poza produsului <span className="text-xs text-gray-400 font-normal">(opțional)</span>
+                                </label>
+                                {imagePreview ? (
+                                  <motion.div
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    className="relative group rounded-lg overflow-hidden border-2 border-purple-500/50 shadow-lg shadow-purple-500/20"
+                                  >
+                                    <img
+                                      src={imagePreview}
+                                      alt="Preview"
+                                      className="w-full h-52 object-cover"
+                                    />
+                                    <motion.button
+                                      type="button"
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                      onClick={() => {
+                                        setImage(null)
+                                        setImagePreview(null)
+                                      }}
+                                      className="absolute top-3 right-3 px-4 py-2 bg-red-500/90 hover:bg-red-500 text-white text-sm font-semibold rounded-lg transition-colors shadow-lg"
+                                    >
+                                      Șterge
+                                    </motion.button>
+                                  </motion.div>
+                                ) : (
+                                  <label className="relative flex items-center justify-center w-full h-16 border-2 border-dashed border-purple-500/50 rounded-lg cursor-pointer bg-gray-800/60 hover:bg-gray-800/80 transition-all group shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 hover:border-purple-400">
+                                    <div className="flex items-center space-x-3">
+                                      <ImageIcon className="w-6 h-6 text-purple-400 group-hover:text-purple-300 transition-colors" />
+                                      <p className="text-sm text-gray-300 group-hover:text-white font-medium transition-colors">
+                                        <span className="font-semibold">Click pentru a încărca</span> sau drag & drop
+                                      </p>
+                                    </div>
+                                    <input
+                                      id="image"
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={handleImageChange}
+                                      className="hidden"
+                                    />
+                                  </label>
+                                )}
+                              </div>
+
+                              {/* Advanced Options */}
+                              <div className="relative">
+                                <motion.button
+                                  type="button"
+                                  onClick={() => setShowAdvanced(!showAdvanced)}
+                                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-800/60 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg transition-all"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <Settings className="w-4 h-4 text-gray-400" />
+                                    <span className="text-sm font-semibold text-white">Opțiuni avansate</span>
+                                  </div>
+                                  {showAdvanced ? (
+                                    <ChevronUp className="w-4 h-4 text-gray-400" />
+                                  ) : (
+                                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                                  )}
+                                </motion.button>
+
+                                <AnimatePresence>
+                                  {showAdvanced && (
+                                    <motion.div
+                                      initial={{ height: 0, opacity: 0 }}
+                                      animate={{ height: 'auto', opacity: 1 }}
+                                      exit={{ height: 0, opacity: 0 }}
+                                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                      className="overflow-hidden"
+                                    >
+                                      <div className="mt-4 space-y-4 p-4 bg-gray-800/40 rounded-lg border border-gray-700/30">
+                                        {/* Aspect Ratio Presets */}
+                                        <div>
+                                          <label className="block text-xs font-semibold text-gray-300 mb-3">Aspect Ratio</label>
+                                          <div className="grid grid-cols-2 gap-3">
+                                            {(Object.keys(ASPECT_RATIO_PRESETS) as AspectRatio[]).map((ratio) => {
+                                              const preset = ASPECT_RATIO_PRESETS[ratio]
+                                              const isSelected = options.aspectRatio === ratio
+                                              return (
+                                                <motion.button
+                                                  key={ratio}
+                                                  type="button"
+                                                  onClick={() => setOptions({ ...options, aspectRatio: ratio })}
+                                                  whileHover={{ scale: 1.02 }}
+                                                  whileTap={{ scale: 0.98 }}
+                                                  className={`relative p-4 rounded-lg border-2 transition-all ${
+                                                    isSelected
+                                                      ? 'border-blue-500 bg-blue-500/20'
+                                                      : 'border-gray-700/50 bg-gray-800/60 hover:border-gray-600/50'
+                                                  }`}
+                                                >
+                                                  <div className="mb-3 flex items-center justify-center">
+                                                    <div
+                                                      className={`${preset.previewClass} ${
+                                                        isSelected
+                                                          ? 'bg-gradient-to-br from-blue-500/30 to-purple-500/30 border-2 border-blue-400/50'
+                                                          : 'bg-gradient-to-br from-gray-700/50 to-gray-800/50 border border-gray-600/50'
+                                                      } rounded transition-all shadow-lg`}
+                                                    />
+                                                  </div>
+                                                  <div className="text-center">
+                                                    <div className="flex items-center justify-center gap-2 mb-1">
+                                                      <span className={`text-sm font-bold ${isSelected ? 'text-blue-400' : 'text-white'}`}>
+                                                        {preset.label}
+                                                      </span>
+                                                      {isSelected && (
+                                                        <Check className="w-4 h-4 text-blue-400" />
+                                                      )}
+                                                    </div>
+                                                    <p className="text-xs text-gray-400 mb-1">{preset.description}</p>
+                                                    <p className="text-xs text-gray-500">
+                                                      {preset.width} × {preset.height}px
+                                                    </p>
+                                                  </div>
+                                                </motion.button>
+                                              )
+                                            })}
+                                          </div>
+                                        </div>
+
+                                        {/* Style */}
+                                        <div>
+                                          <label className="block text-xs font-semibold text-gray-300 mb-2">Stil</label>
+                                          <select
+                                            value={options.style}
+                                            onChange={(e) => setOptions({ ...options, style: e.target.value })}
+                                            className="w-full px-3 py-2 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50"
+                                          >
+                                            <option value="professional">Profesional</option>
+                                            <option value="artistic">Artistic</option>
+                                            <option value="modern">Modern</option>
+                                            <option value="vintage">Vintage</option>
+                                            <option value="minimalist">Minimalist</option>
+                                            <option value="bold">Bold & Colorful</option>
+                                          </select>
+                                        </div>
+
+                                        {/* Negative Prompt */}
+                                        <div>
+                                          <label className="block text-xs font-semibold text-gray-300 mb-2">Negative Prompt</label>
+                                          <input
+                                            type="text"
+                                            value={options.negativePrompt}
+                                            onChange={(e) => setOptions({ ...options, negativePrompt: e.target.value })}
+                                            placeholder="blurry, low quality, distorted"
+                                            className="w-full px-3 py-2 bg-gray-800/80 border border-gray-700/50 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50"
+                                          />
+                                        </div>
+
+                                        {/* Guidance Scale */}
+                                        <div>
+                                          <label className="block text-xs font-semibold text-gray-300 mb-2">
+                                            Guidance Scale: {options.guidanceScale}
+                                          </label>
+                                          <input
+                                            type="range"
+                                            min="1"
+                                            max="20"
+                                            step="0.5"
+                                            value={options.guidanceScale}
+                                            onChange={(e) => setOptions({ ...options, guidanceScale: parseFloat(e.target.value) })}
+                                            className="w-full"
+                                          />
+                                          <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                            <span>Mai puțin creativ</span>
+                                            <span>Mai creativ</span>
+                                          </div>
+                                        </div>
+
+                                        {/* Num Inference Steps */}
+                                        <div>
+                                          <label className="block text-xs font-semibold text-gray-300 mb-2">
+                                            Calitate (Steps): {options.numInferenceSteps}
+                                          </label>
+                                          <input
+                                            type="range"
+                                            min="10"
+                                            max="50"
+                                            step="5"
+                                            value={options.numInferenceSteps}
+                                            onChange={(e) => setOptions({ ...options, numInferenceSteps: parseInt(e.target.value) })}
+                                            className="w-full"
+                                          />
+                                          <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                            <span>Rapid</span>
+                                            <span>Mai bună calitate</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+
+                              {/* Cost display */}
+                              <div className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm text-gray-300">Cost:</span>
+                                  <span className="text-lg font-bold text-purple-400">
+                                    {IMAGE_GENERATION_COST} credite
+                                  </span>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">Generare imagine</p>
+                              </div>
+
+                              {/* Error Display */}
+                              {generatedImageError && (
+                                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                                  <p className="text-red-400 text-sm">{generatedImageError}</p>
+                                </div>
+                              )}
+
+                              {/* Generated Image Display */}
+                              {generatedImageUrl && (
+                                <div className="space-y-2">
+                                  <div className="relative rounded-lg border-2 border-purple-500/50 shadow-lg overflow-hidden bg-gray-800/50">
+                                    <img 
+                                      src={`/api/proxy-image?url=${encodeURIComponent(generatedImageUrl)}`}
+                                      alt="Generated ad" 
+                                      className="w-full h-auto"
+                                      onError={(e) => {
+                                        console.error('Image load error, trying direct URL:', generatedImageUrl)
+                                        const target = e.target as HTMLImageElement
+                                        target.src = generatedImageUrl
+                                      }}
+                                      crossOrigin="anonymous"
+                                    />
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => window.open(generatedImageUrl, '_blank')}
+                                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg flex items-center justify-center gap-2"
+                                  >
+                                    <Download className="w-4 h-4" />
+                                    Descarcă
+                                  </button>
+                                </div>
+                              )}
+
+                              {/* Submit Button */}
+                              <motion.button
+                                type="submit"
+                                disabled={isLoading || currentCredits < IMAGE_GENERATION_COST || !prompt.trim()}
+                                whileHover={{ scale: isLoading ? 1 : 1.02, y: -2 }}
+                                whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                                className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-500 hover:via-purple-500 hover:to-pink-500 text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl shadow-purple-500/50 flex items-center justify-center space-x-2 relative overflow-hidden group"
+                              >
+                                {isLoading ? (
+                                  <>
+                                    <motion.svg
+                                      className="animate-spin h-5 w-5 text-white"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      animate={{ rotate: 360 }}
+                                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                    >
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </motion.svg>
+                                    <span>Se generează...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Sparkles className="w-5 h-5" />
+                                    <span>{t('generateAd')} ({IMAGE_GENERATION_COST} {t('creditsCost')})</span>
+                                  </>
+                                )}
+                              </motion.button>
+                            </form>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -5277,7 +5275,7 @@ function DashboardContent() {
                           {/* Background decorative animat */}
                           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 rounded-2xl blur-2xl animate-pulse"></div>
                           
-                          <div className="relative bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6 md:p-8 shadow-2xl overflow-hidden">
+                          <div className="relative bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-4 md:p-6 lg:p-8 shadow-2xl overflow-hidden">
                             {/* Decorative elements */}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl"></div>
                             <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl"></div>
@@ -5297,7 +5295,7 @@ function DashboardContent() {
                                   return newErrors
                                 })
                               }}
-                              className="relative flex items-center space-x-2 text-gray-400 hover:text-white mb-6 transition-all hover:translate-x-[-4px] group z-10"
+                              className="relative flex items-center space-x-2 text-gray-400 hover:text-white mb-4 md:mb-6 transition-all hover:translate-x-[-4px] group z-10"
                             >
                               <ArrowLeft className="w-4 h-4 group-hover:translate-x-[-2px] transition-transform" />
                               <span className="text-sm font-medium">
@@ -5306,34 +5304,34 @@ function DashboardContent() {
                             </button>
 
                             {/* Header cu icon și descriere - mai engaging */}
-                            <div className="relative flex flex-col md:flex-row items-start gap-5 md:gap-6 z-10">
-                              <div className="relative">
+                            <div className="relative flex flex-row items-center gap-3 md:gap-5 lg:gap-6 z-10">
+                              <div className="relative flex-shrink-0">
                                 <motion.div
                                   animate={{ rotate: [0, 5, -5, 0] }}
                                   transition={{ duration: 4, repeat: Infinity, repeatDelay: 2 }}
                                   className="absolute inset-0 bg-gradient-to-br from-blue-500/30 to-purple-500/30 rounded-xl blur-lg"
                                 ></motion.div>
-                                <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-blue-500/30 shadow-lg group-hover:shadow-blue-500/30 transition-all">
-                                  <ToolIcon className="w-10 h-10 md:w-12 md:h-12 text-blue-400" />
+                                <div className="relative w-12 h-12 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-blue-500/30 shadow-lg group-hover:shadow-blue-500/30 transition-all">
+                                  <ToolIcon className="w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12 text-blue-400" />
                                 </div>
                               </div>
-                              <div className="flex-1 pt-1">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <h3 className="text-2xl md:text-3xl font-bold text-white bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2 flex-wrap">
+                                  <h3 className="text-lg md:text-2xl lg:text-3xl font-bold text-white bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
                                     {toolName}
                                   </h3>
-                                  <div className="px-3 py-1 bg-purple-500/20 border border-purple-400/30 rounded-lg">
-                                    <span className="text-xs font-semibold text-purple-300">
+                                  <div className="px-2 md:px-3 py-0.5 md:py-1 bg-purple-500/20 border border-purple-400/30 rounded-lg">
+                                    <span className="text-[10px] md:text-xs font-semibold text-purple-300">
                                       {TOOL_COSTS[activeTool] || TEXT_GENERATION_COST} {settingsFormData.language === 'en' ? 'credits' : 'credite'}
                                     </span>
                                   </div>
                                 </div>
-                                <p className="text-gray-300 text-base md:text-lg leading-relaxed mb-3">{toolDescription}</p>
+                                <p className="text-gray-300 text-sm md:text-base lg:text-lg leading-relaxed mb-2 md:mb-3">{toolDescription}</p>
                                 
                                 {/* Quick tips preview */}
                                 {toolTips.length > 0 && (
-                                  <div className="flex items-center gap-2 text-sm text-blue-400/80">
-                                    <Sparkles className="w-4 h-4" />
+                                  <div className="flex items-center gap-2 text-xs md:text-sm text-blue-400/80">
+                                    <Sparkles className="w-3 h-3 md:w-4 md:h-4" />
                                     <span className="font-medium">
                                       {settingsFormData.language === 'en' 
                                         ? 'Pro tip: ' + toolTips[0].replace(/^[^\s]+\s/, '')
@@ -5464,50 +5462,40 @@ function DashboardContent() {
                 transition={{ duration: 0.3 }}
                 className="space-y-8"
               >
-                {/* Welcome Section cu workflow vizual - compact */}
+                {/* Workflow Visualization */}
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="relative bg-gradient-to-br from-blue-600/10 via-purple-600/10 to-pink-600/10 border border-blue-500/20 rounded-xl p-3 md:p-4 backdrop-blur-xl"
+                  className="relative bg-gradient-to-br from-blue-600/10 via-purple-600/10 to-pink-600/10 border border-blue-500/20 rounded-xl p-4 backdrop-blur-xl"
                 >
-                  <div className="flex items-center justify-between">
-                    {/* Workflow Visualization - pe mobile doar workflow, pe desktop ambele */}
-                    <div className="flex items-center gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-gray-900/60 rounded-lg border border-gray-700/50">
-                      <div className="flex items-center gap-1 text-[10px] md:text-[10px]">
-                        <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 bg-blue-500/20 border border-blue-400/30 rounded text-blue-300 font-medium">
+                  <div className="flex items-center justify-center sm:justify-start">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900/60 rounded-lg border border-gray-700/50">
+                      <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mr-1">
+                        {settingsFormData.language === 'en' ? '💡 Recommended Workflow' : '💡 Workflow Recomandat'}
+                      </span>
+                      <div className="flex items-center gap-1 text-[10px]">
+                        <div className="flex items-center gap-1 px-2 py-0.5 bg-blue-500/20 border border-blue-400/30 rounded text-blue-300 font-medium">
                           <Target className="w-3 h-3" />
-                          <span className="hidden sm:inline">{settingsFormData.language === 'en' ? 'Strategy' : 'Strategie'}</span>
+                          <span>{settingsFormData.language === 'en' ? 'Strategy' : 'Strategie'}</span>
                         </div>
-                        <ChevronRight className="w-2.5 h-2.5 md:w-3 md:h-3 text-gray-500 flex-shrink-0" />
-                        <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 bg-purple-500/20 border border-purple-400/30 rounded text-purple-300 font-medium">
+                        <ChevronRight className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                        <div className="flex items-center gap-1 px-2 py-0.5 bg-purple-500/20 border border-purple-400/30 rounded text-purple-300 font-medium">
                           <PenTool className="w-3 h-3" />
-                          <span className="hidden sm:inline">{settingsFormData.language === 'en' ? 'Create' : 'Creare'}</span>
+                          <span>{settingsFormData.language === 'en' ? 'Create' : 'Creare'}</span>
                         </div>
-                        <ChevronRight className="w-2.5 h-2.5 md:w-3 md:h-3 text-gray-500 flex-shrink-0" />
-                        <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 bg-pink-500/20 border border-pink-400/30 rounded text-pink-300 font-medium">
+                        <ChevronRight className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                        <div className="flex items-center gap-1 px-2 py-0.5 bg-pink-500/20 border border-pink-400/30 rounded text-pink-300 font-medium">
                           <Calendar className="w-3 h-3" />
-                          <span className="hidden sm:inline">{settingsFormData.language === 'en' ? 'Plan' : 'Planificare'}</span>
+                          <span>{settingsFormData.language === 'en' ? 'Plan' : 'Planificare'}</span>
                         </div>
                       </div>
-                    </div>
-                    
-                    {/* Toolkit title - doar pe desktop */}
-                    <div className="hidden md:flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
-                        <Sparkles className="w-5 h-5 text-blue-300" />
-                      </div>
-                      <h2 className="text-lg md:text-xl font-bold text-white">
-                        {settingsFormData.language === 'en' 
-                          ? '🚀 Your Marketing Toolkit' 
-                          : '🚀 Toolkit-ul Tău de Marketing'}
-                      </h2>
                     </div>
                   </div>
                 </motion.div>
 
                 {/* Butoane Rapide pentru Tool-uri - îmbunătățite */}
-                <div className="space-y-6 md:space-y-8">
+                <div className="space-y-6">
                   {toolGroups.map((group, groupIndex) => {
                     // Definește tool-urile conectate pentru fiecare tool
                     const getRelatedTools = (toolId: ToolId): ToolId[] => {
@@ -5522,7 +5510,7 @@ function DashboardContent() {
                       return connections[toolId] || []
                     }
 
-                    const isGroupExpanded = expandedGroups.has(group.id)
+                    const isExpanded = expandedGroups.has(group.id)
 
                     return (
                       <motion.div
@@ -5530,39 +5518,45 @@ function DashboardContent() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 + groupIndex * 0.1 }}
-                        className="space-y-3 md:space-y-5"
+                        className="space-y-4"
                       >
                         <motion.button
                           onClick={() => toggleGroup(group.id)}
-                          className="w-full md:w-auto flex items-center justify-between md:justify-start gap-3 p-2 md:p-0 rounded-lg md:rounded-none hover:bg-gray-800/50 md:hover:bg-transparent transition-colors"
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                          className="w-full flex items-center justify-between gap-3 p-4 bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 rounded-xl hover:border-blue-500/50 transition-all"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                              <group.icon className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
+                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                              <group.icon className="w-5 h-5 text-blue-400" />
                             </div>
                             <div className="text-left">
-                              <h3 className="text-base md:text-xl font-bold text-white">
+                              <h3 className="text-lg md:text-xl font-bold text-white">
                                 {settingsFormData.language === 'en' ? group.nameEn : group.name}
                               </h3>
-                              <p className="hidden md:block text-xs text-gray-500 mt-0.5">
+                              <p className="text-xs text-gray-500 mt-0.5">
                                 {groupIndex === 0 
                                   ? (settingsFormData.language === 'en' ? 'Start here to build your foundation' : 'Începe aici pentru a-ți construi fundația')
                                   : (settingsFormData.language === 'en' ? 'Create amazing content' : 'Creează conținut uimitor')}
                               </p>
                             </div>
                           </div>
-                          {/* Săgeată pentru collapse - doar pe mobile */}
-                          <div className="md:hidden">
-                            {isGroupExpanded ? (
-                              <ChevronUp className="w-5 h-5 text-gray-400" />
-                            ) : (
-                              <ChevronDown className="w-5 h-5 text-gray-400" />
-                            )}
-                          </div>
+                          {isExpanded ? (
+                            <ChevronUp className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                          ) : (
+                            <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                          )}
                         </motion.button>
-                        {/* Tool-uri - collapse pe mobile, întotdeauna vizibile pe desktop */}
-                        <div className="hidden md:block">
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {group.tools.map((tool, toolIndex) => {
                             const ToolIcon = tool.icon
                             const relatedTools = getRelatedTools(tool.id as ToolId)
@@ -5626,82 +5620,6 @@ function DashboardContent() {
                               </motion.button>
                             )
                           })}
-                          </div>
-                        </div>
-                        {/* Tool-uri pe mobile - cu collapse */}
-                        <AnimatePresence>
-                          {isGroupExpanded && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.2 }}
-                              className="overflow-hidden md:hidden"
-                            >
-                              <div className="grid grid-cols-1 gap-4">
-                                {group.tools.map((tool, toolIndex) => {
-                                  const ToolIcon = tool.icon
-                                  const relatedTools = getRelatedTools(tool.id as ToolId)
-                                  const relatedToolNames = relatedTools
-                                    .map(id => {
-                                      const found = toolGroups.flatMap(g => g.tools).find(t => t.id === id)
-                                      return found ? (settingsFormData.language === 'en' ? found.nameEn : found.name) : null
-                                    })
-                                    .filter(Boolean)
-                                  
-                                  return (
-                                    <motion.button
-                                      key={tool.id}
-                                      onClick={() => setActiveTool(tool.id as ToolId)}
-                                      whileHover={{ scale: 1.02, y: -4 }}
-                                      whileTap={{ scale: 0.98 }}
-                                      initial={{ opacity: 0, y: 10 }}
-                                      animate={{ opacity: 1, y: 0 }}
-                                      transition={{ delay: 0.3 + toolIndex * 0.05 }}
-                                      className="relative p-5 bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 rounded-xl hover:border-blue-500/50 transition-all text-left group overflow-hidden"
-                                    >
-                                      {/* Decorative gradient on hover */}
-                                      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 via-purple-600/0 to-pink-600/0 group-hover:from-blue-600/10 group-hover:via-purple-600/10 group-hover:to-pink-600/10 transition-all duration-300"></div>
-                                      
-                                      <div className="relative flex items-start gap-4">
-                                        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center group-hover:from-blue-500/30 group-hover:to-purple-500/30 transition-all flex-shrink-0 shadow-lg group-hover:shadow-blue-500/20">
-                                          <ToolIcon className="w-6 h-6 text-blue-400 group-hover:scale-110 transition-transform" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          <div className="flex items-start justify-between gap-2 mb-1">
-                                            <h4 className="text-base font-bold text-white group-hover:text-blue-400 transition-colors">
-                                              {settingsFormData.language === 'en' ? tool.nameEn : tool.name}
-                                            </h4>
-                                          </div>
-                                          <p className="text-sm text-gray-400 line-clamp-2 mb-2">
-                                            {settingsFormData.language === 'en' ? tool.descriptionEn : tool.description}
-                                          </p>
-                                          
-                                          {/* Related Tools Badge */}
-                                          {relatedToolNames.length > 0 && (
-                                            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                                              <span className="text-[10px] text-gray-500 font-medium">
-                                                {settingsFormData.language === 'en' ? '→' : '→'}
-                                              </span>
-                                              <span className="text-[10px] text-blue-400/80 font-medium">
-                                                {settingsFormData.language === 'en' 
-                                                  ? `Works with: ${relatedToolNames.slice(0, 2).join(', ')}`
-                                                  : `Funcționează cu: ${relatedToolNames.slice(0, 2).join(', ')}`}
-                                              </span>
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                      
-                                      {/* Cost badge */}
-                                      <div className="absolute top-3 right-3 px-2 py-1 bg-purple-500/20 border border-purple-400/30 rounded-md">
-                                        <span className="text-[10px] font-semibold text-purple-300">
-                                          {tool.id === 'design-publicitar' ? IMAGE_GENERATION_COST : (TOOL_COSTS[tool.id] || TEXT_GENERATION_COST)} {settingsFormData.language === 'en' ? 'credits' : 'credite'}
-                                        </span>
-                                      </div>
-                                    </motion.button>
-                                  )
-                                })}
                               </div>
                             </motion.div>
                           )}
