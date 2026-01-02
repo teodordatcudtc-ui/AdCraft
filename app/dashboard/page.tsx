@@ -124,7 +124,7 @@ const ASPECT_RATIO_PRESETS: Record<AspectRatio, { width: number; height: number;
   },
 }
 
-const IMAGE_GENERATION_COST = 8
+const IMAGE_GENERATION_COST = 9
 const TEXT_GENERATION_COST = 3
 
 // Costuri pentru fiecare tool
@@ -897,6 +897,14 @@ function DashboardContent() {
       icon: Target,
       tools: [
         {
+          id: 'strategie-client',
+          name: 'Caută Client Ideal',
+          nameEn: 'Find Ideal Client',
+          description: 'Identifică clientul tău ideal și creează mesaje care rezonează cu el.',
+          descriptionEn: 'Identify your ideal client and create messages that resonate with them.',
+          icon: Users,
+        },
+        {
           id: 'analiza-piata',
           name: 'Analiză de Piață & Concurență',
           nameEn: 'Market & Competitor Analysis',
@@ -1091,7 +1099,7 @@ function DashboardContent() {
         setActiveSection('tooluri')
         // Expandăm grupul care conține tool-ul
         const toolGroups = [
-          { id: 'strategie', tools: ['analiza-piata', 'strategie-video'] },
+          { id: 'strategie', tools: ['strategie-client', 'analiza-piata', 'strategie-video'] },
           { id: 'creare', tools: ['copywriting', 'design-publicitar', 'planificare-conținut'] },
         ]
         const group = toolGroups.find(g => g.tools.includes(toolParam))
@@ -3534,7 +3542,6 @@ function DashboardContent() {
               if (!user) return
               
               setSavingOnboarding(true)
-              setGeneratingStrategy(true)
               try {
                 // Pasul 1: Salvează informațiile despre business
                 const { error: profileError } = await supabase
@@ -3548,46 +3555,7 @@ function DashboardContent() {
 
                 if (profileError) throw profileError
 
-                // Pasul 2: Generează strategia client prin n8n
-                const strategyInputs = {
-                  businessType: onboardingData.businessType.trim(),
-                  sellType: onboardingData.sellType,
-                  priceRange: onboardingData.priceRange,
-                  targetAudience: onboardingData.targetAudience,
-                  objective: onboardingData.objective,
-                }
-
-                // Verifică dacă toate câmpurile strategie sunt completate
-                const hasStrategyData = strategyInputs.businessType && 
-                                      strategyInputs.sellType && 
-                                      strategyInputs.priceRange && 
-                                      strategyInputs.targetAudience && 
-                                      strategyInputs.objective
-
-                if (hasStrategyData) {
-                  // Trimite la n8n pentru generare strategie
-                  const toolsResponse = await fetch('/api/tools', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                      toolId: 'strategie-client',
-                      inputs: strategyInputs,
-                      user_id: user.id,
-                    }),
-                  })
-
-                  if (!toolsResponse.ok) {
-                    const errorData = await toolsResponse.json()
-                    throw new Error(errorData.error || 'Failed to generate strategy')
-                  }
-
-                  const toolsData = await toolsResponse.json()
-                  setOnboardingStrategyResult(toolsData.data)
-                  
-                  // Strategia este deja salvată în baza de date prin API-ul /api/tools
-                }
+                // Nu mai generăm strategia automat - doar salvăm datele pentru uz ulterior
 
                 // Reîncarcă profilul din baza de date pentru a actualiza starea
                 const { data: updatedProfile } = await supabase
@@ -3611,27 +3579,8 @@ function DashboardContent() {
                   // Verifică din nou dacă trebuie să afișeze onboarding
                   const hasBusinessInfo = updatedProfile.business_type && updatedProfile.business_description
                   if (hasBusinessInfo) {
-                    // Verifică dacă există strategie client salvată
-                    const { data: strategyGen } = await supabase
-                      .from('generations')
-                      .select('id, result_text')
-                      .eq('user_id', user.id)
-                      .eq('type', 'strategie-client')
-                      .order('created_at', { ascending: false })
-                      .limit(1)
-                      .maybeSingle()
-                    
-                    if (strategyGen) {
-                      setShowOnboarding(false)
-                    } else if (hasStrategyData) {
-                      // Dacă s-a generat strategia, așteaptă puțin pentru ca să fie salvată
-                      setTimeout(() => {
-                        setShowOnboarding(false)
-                      }, 2000)
-                    } else {
-                      // Dacă nu s-a generat strategia, totuși ascunde onboarding-ul
-                      setShowOnboarding(false)
-                    }
+                    // Dacă datele sunt salvate, ascunde onboarding-ul
+                    setShowOnboarding(false)
                   } else {
                     setShowOnboarding(false)
                   }
@@ -3641,8 +3590,8 @@ function DashboardContent() {
                 setNotification({ 
                   type: 'success', 
                   message: settingsFormData.language === 'en' 
-                    ? (hasStrategyData ? 'Business information saved and strategy generated!' : 'Business information saved!')
-                    : (hasStrategyData ? 'Informațiile despre afacere au fost salvate și strategia a fost generată!' : 'Informațiile despre afacere au fost salvate!')
+                    ? 'Business information saved!'
+                    : 'Informațiile despre afacere au fost salvate!'
                 })
                 setTimeout(() => setNotification(null), 5000)
               } catch (error: any) {
@@ -3654,7 +3603,6 @@ function DashboardContent() {
                 setTimeout(() => setNotification(null), 5000)
               } finally {
                 setSavingOnboarding(false)
-                setGeneratingStrategy(false)
               }
             }} className="space-y-6">
               {/* Business Type */}

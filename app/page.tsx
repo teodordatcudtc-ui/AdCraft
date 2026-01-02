@@ -224,7 +224,7 @@ export default function Home() {
 
   // Costuri în credite
   const TEXT_GENERATION_COST = 3
-  const IMAGE_GENERATION_COST = 8
+  const IMAGE_GENERATION_COST = 9
   
   // Calculează costul total
   const calculateCost = () => {
@@ -361,7 +361,7 @@ export default function Home() {
       features: [
         '40 credite',
         '~10 generări copywriting (4 credite)',
-        '~5 generări imagini (8 credite)',
+        '~4 generări imagini (9 credite)',
         'Sau combinații personalizate',
         'Suport email',
       ],
@@ -375,7 +375,7 @@ export default function Home() {
       features: [
         '280 credite',
         '~70 generări copywriting (4 credite)',
-        '~35 generări imagini (8 credite)',
+        '~31 generări imagini (9 credite)',
         'Sau combinații personalizate',
         'Suport dedicat',
       ],
@@ -390,7 +390,7 @@ export default function Home() {
       features: [
         '100 credite',
         '~25 generări copywriting (4 credite)',
-        '~12 generări imagini (8 credite)',
+        '~11 generări imagini (9 credite)',
         'Sau combinații personalizate',
         'Suport priorititar',
       ],
@@ -1288,7 +1288,7 @@ export default function Home() {
               </span>
             </h2>
             <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              Alege pachetul de credite perfect pentru nevoile tale. Copywriting (4 credite), imagini (8 credite), analiză de piață (6 credite), strategie video (6 credite), planificare (7 credite).
+              Alege pachetul de credite perfect pentru nevoile tale. Copywriting (4 credite), imagini (9 credite), analiză de piață (6 credite), strategie video (6 credite), planificare (7 credite).
             </p>
           </motion.div>
 

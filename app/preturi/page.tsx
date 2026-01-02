@@ -26,7 +26,7 @@ const pricingPackages = [
     features: [
       '40 credite',
       '~10 generări copywriting (4 credite)',
-      '~5 generări imagini (8 credite)',
+      '~4 generări imagini (9 credite)',
       'Sau combinații personalizate',
       'Suport email',
     ],
@@ -40,7 +40,7 @@ const pricingPackages = [
     features: [
       '280 credite',
       '~70 generări copywriting (4 credite)',
-      '~35 generări imagini (8 credite)',
+      '~31 generări imagini (9 credite)',
       'Sau combinații personalizate',
       'Suport dedicat',
     ],
@@ -55,7 +55,7 @@ const pricingPackages = [
     features: [
       '100 credite',
       '~25 generări copywriting (4 credite)',
-      '~12 generări imagini (8 credite)',
+      '~11 generări imagini (9 credite)',
       'Sau combinații personalizate',
       'Suport priorititar',
     ],
@@ -318,7 +318,7 @@ export default function Preturi() {
             </span>
           </h1>
           <p className="text-xl text-gray-400 leading-relaxed">
-            Alege pachetul de credite perfect pentru nevoile tale. Copywriting (4 credite), imagini (8 credite), analiză de piață (6 credite), strategie video (6 credite), planificare (7 credite).
+            Alege pachetul de credite perfect pentru nevoile tale. Copywriting (4 credite), imagini (9 credite), analiză de piață (6 credite), strategie video (6 credite), planificare (7 credite).
           </p>
         </motion.div>
 
@@ -414,7 +414,7 @@ export default function Preturi() {
               },
               {
                 q: 'Cât costă fiecare generare?',
-                a: 'Copywriting costă 4 credite, generarea de imagini costă 8 credite, analiza de piață costă 6 credite, strategie video costă 6 credite, iar planificare de conținut costă 7 credite. Poți alege să folosești orice tool în funcție de nevoile tale.',
+                a: 'Copywriting costă 4 credite, generarea de imagini costă 9 credite, analiza de piață costă 6 credite, strategie video costă 6 credite, iar planificare de conținut costă 7 credite. Poți alege să folosești orice tool în funcție de nevoile tale.',
               },
               {
                 q: 'Ce metode de plată acceptați?',
