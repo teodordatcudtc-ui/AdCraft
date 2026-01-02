@@ -11,7 +11,7 @@ const pricingPackages = [
   {
     name: 'Test',
     credits: 1,
-    price: 0.10,
+    price: 0.50,
     features: [
       '1 credit pentru testare',
       'Test Stripe integration',
