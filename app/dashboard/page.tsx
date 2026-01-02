@@ -3589,21 +3589,55 @@ function DashboardContent() {
                   // Strategia este deja salvată în baza de date prin API-ul /api/tools
                 }
 
-                // Actualizează profilul local
-                setUserProfile((prev: any) => ({
-                  ...prev,
-                  business_type: onboardingData.business_type.trim(),
-                  business_description: onboardingData.business_description.trim(),
-                }))
-                
-                // Actualizează și formularul de profil
-                setProfileFormData((prev) => ({
-                  ...prev,
-                  business_type: onboardingData.business_type.trim(),
-                  business_description: onboardingData.business_description.trim(),
-                }))
+                // Reîncarcă profilul din baza de date pentru a actualiza starea
+                const { data: updatedProfile } = await supabase
+                  .from('user_profiles')
+                  .select('*')
+                  .eq('id', user.id)
+                  .single()
 
-                setShowOnboarding(false)
+                if (updatedProfile) {
+                  setUserProfile(updatedProfile)
+                  // Actualizează și formularul de profil
+                  setProfileFormData({
+                    full_name: updatedProfile.full_name || '',
+                    phone: updatedProfile.phone || '',
+                    bio: updatedProfile.bio || '',
+                    avatar_url: updatedProfile.avatar_url || '',
+                    business_type: updatedProfile.business_type || '',
+                    business_description: updatedProfile.business_description || '',
+                  })
+                  
+                  // Verifică din nou dacă trebuie să afișeze onboarding
+                  const hasBusinessInfo = updatedProfile.business_type && updatedProfile.business_description
+                  if (hasBusinessInfo) {
+                    // Verifică dacă există strategie client salvată
+                    const { data: strategyGen } = await supabase
+                      .from('generations')
+                      .select('id, result_text')
+                      .eq('user_id', user.id)
+                      .eq('type', 'strategie-client')
+                      .order('created_at', { ascending: false })
+                      .limit(1)
+                      .maybeSingle()
+                    
+                    if (strategyGen) {
+                      setShowOnboarding(false)
+                    } else if (hasStrategyData) {
+                      // Dacă s-a generat strategia, așteaptă puțin pentru ca să fie salvată
+                      setTimeout(() => {
+                        setShowOnboarding(false)
+                      }, 2000)
+                    } else {
+                      // Dacă nu s-a generat strategia, totuși ascunde onboarding-ul
+                      setShowOnboarding(false)
+                    }
+                  } else {
+                    setShowOnboarding(false)
+                  }
+                } else {
+                  setShowOnboarding(false)
+                }
                 setNotification({ 
                   type: 'success', 
                   message: settingsFormData.language === 'en' 
