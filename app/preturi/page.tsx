@@ -1,17 +1,32 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { Check } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Check, X } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import Auth from '@/components/Auth'
+import type { User } from '@supabase/supabase-js'
 
 const pricingPackages = [
   {
-    name: 'Pachet 1',
-    credits: 50,
+    name: 'Test',
+    credits: 1,
+    price: 0.10,
+    features: [
+      '1 credit pentru testare',
+      'Test Stripe integration',
+    ],
+    color: 'from-green-500 to-emerald-500',
+    borderColor: 'border-green-500/50',
+  },
+  {
+    name: 'Starter',
+    credits: 40,
     price: 10,
     features: [
-      '50 credite',
-      '~16 generări de text (3 credite)',
-      '~8 generări de imagini (6 credite)',
+      '40 credite',
+      '~10 generări copywriting (4 credite)',
+      '~5 generări imagini (8 credite)',
       'Sau combinații personalizate',
       'Suport email',
     ],
@@ -19,37 +34,161 @@ const pricingPackages = [
     borderColor: 'border-blue-500/50',
   },
   {
-    name: 'Pachet 2',
-    credits: 120,
-    price: 20,
-    features: [
-      '120 credite',
-      '~40 generări de text (3 credite)',
-      '~20 generări de imagini (6 credite)',
-      'Sau combinații personalizate',
-      'Suport priorititar',
-    ],
-    color: 'from-purple-500 to-pink-500',
-    borderColor: 'border-purple-500/50',
-    popular: true,
-  },
-  {
-    name: 'Pachet 3',
-    credits: 350,
+    name: 'Pro',
+    credits: 280,
     price: 50,
     features: [
-      '350 credite',
-      '~116 generări de text (3 credite)',
-      '~58 generări de imagini (6 credite)',
+      '280 credite',
+      '~70 generări copywriting (4 credite)',
+      '~35 generări imagini (8 credite)',
       'Sau combinații personalizate',
       'Suport dedicat',
     ],
     color: 'from-orange-500 to-red-500',
     borderColor: 'border-orange-500/50',
+    popular: true,
+  },
+  {
+    name: 'Growth',
+    credits: 100,
+    price: 20,
+    features: [
+      '100 credite',
+      '~25 generări copywriting (4 credite)',
+      '~12 generări imagini (8 credite)',
+      'Sau combinații personalizate',
+      'Suport priorititar',
+    ],
+    color: 'from-purple-500 to-pink-500',
+    borderColor: 'border-purple-500/50',
   },
 ]
 
 export default function Preturi() {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [selectedPackage, setSelectedPackage] = useState<typeof pricingPackages[0] | null>(null)
+
+  const handleStripeCheckout = useCallback(async (pkg: typeof pricingPackages[0]) => {
+    // Verifică din nou utilizatorul pentru siguranță
+    const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
+    
+    if (!currentUser || userError) {
+      console.error('User not authenticated for checkout:', userError)
+      setSelectedPackage(pkg)
+      setShowAuthModal(true)
+      return
+    }
+
+    // Verifică sesiunea
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session || !session.user) {
+      console.error('No valid session for checkout')
+      setSelectedPackage(pkg)
+      setShowAuthModal(true)
+      return
+    }
+
+    // Utilizatorul este 100% logat - continuă cu Stripe
+    console.log('Starting Stripe checkout for package:', pkg.name, 'User:', currentUser.id)
+    
+    try {
+      // Obține token-ul de sesiune pentru autentificare în API
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      if (!currentSession?.access_token) {
+        throw new Error('No access token')
+      }
+
+      // Creează sesiunea de checkout
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentSession.access_token}`,
+        },
+        body: JSON.stringify({
+          packageName: pkg.name,
+          credits: pkg.credits,
+          price: pkg.price,
+          userId: currentUser.id,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to create checkout session')
+      }
+
+      const { url } = await response.json()
+      
+      if (!url) {
+        throw new Error('No checkout URL returned')
+      }
+
+      // Redirecționează către Stripe Checkout
+      window.location.href = url
+    } catch (error: any) {
+      console.error('Error during checkout:', error)
+      alert(error.message || 'Eroare la crearea sesiunii de plată. Te rugăm să încerci din nou.')
+    }
+  }, [])
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const { data: { user: currentUser } } = await supabase.auth.getUser()
+        setUser(currentUser)
+      } catch (error) {
+        console.error('Error checking user:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkUser()
+
+    // Ascultă pentru schimbări de autentificare
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        // Utilizatorul s-a logat, închide modalul și continuă cu Stripe
+        setShowAuthModal(false)
+        if (selectedPackage) {
+          handleStripeCheckout(selectedPackage)
+        }
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [selectedPackage, handleStripeCheckout])
+
+  const handleChoosePlan = async (pkg: typeof pricingPackages[0]) => {
+    // Verifică dacă utilizatorul este logat
+    const { data: { user: currentUser } } = await supabase.auth.getUser()
+    
+    if (!currentUser) {
+      // Utilizatorul nu este logat - deschide modalul de autentificare
+      setSelectedPackage(pkg)
+      setShowAuthModal(true)
+      return
+    }
+
+    // Utilizatorul este logat - verifică din nou pentru siguranță
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session || !session.user) {
+      // Sesiunea nu este validă - deschide modalul de autentificare
+      setSelectedPackage(pkg)
+      setShowAuthModal(true)
+      return
+    }
+
+    // Utilizatorul este 100% logat - continuă cu Stripe
+    handleStripeCheckout(pkg)
+  }
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -179,7 +318,7 @@ export default function Preturi() {
             </span>
           </h1>
           <p className="text-xl text-gray-400 leading-relaxed">
-            Alege pachetul de credite perfect pentru nevoile tale. Folosește creditele pentru generare text (3 credite) sau imagini (6 credite).
+            Alege pachetul de credite perfect pentru nevoile tale. Copywriting (4 credite), imagini (8 credite), analiză de piață (6 credite), strategie video (6 credite), planificare (7 credite).
           </p>
         </motion.div>
 
@@ -240,6 +379,7 @@ export default function Preturi() {
               </ul>
 
               <motion.button
+                onClick={() => handleChoosePlan(pkg)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className={`w-full py-4 px-6 font-bold text-base rounded-lg transition-all duration-300 tracking-wide ${
@@ -270,11 +410,11 @@ export default function Preturi() {
             {[
               {
                 q: 'Cum funcționează sistemul de credite?',
-                a: 'Fiecare pachet oferă un număr de credite. Generarea de text costă 3 credite, iar generarea de imagini costă 6 credite. Poți folosi creditele oricând, în orice combinație.',
+                a: 'Fiecare pachet oferă un număr de credite. Copywriting costă 4 credite, iar generarea de imagini costă 8 credite. Poți folosi creditele oricând, în orice combinație.',
               },
               {
                 q: 'Cât costă fiecare generare?',
-                a: 'Generarea de text (copywriting) costă 3 credite, iar generarea de imagini costă 6 credite. Poți alege să generezi doar text sau doar imagini, sau ambele.',
+                a: 'Copywriting costă 4 credite, generarea de imagini costă 8 credite, analiza de piață costă 6 credite, strategie video costă 6 credite, iar planificare de conținut costă 7 credite. Poți alege să folosești orice tool în funcție de nevoile tale.',
               },
               {
                 q: 'Ce metode de plată acceptați?',
@@ -304,6 +444,33 @@ export default function Preturi() {
           </div>
         </motion.div>
       </div>
+
+      {/* Auth Modal */}
+      <AnimatePresence>
+        {showAuthModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-[#0a0a0f]"
+          >
+            <button
+              onClick={() => setShowAuthModal(false)}
+              className="absolute top-6 right-6 p-2 text-gray-400 hover:text-white transition-colors z-10 bg-gray-800/50 rounded-full"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="min-h-screen flex items-center justify-center p-4">
+              <Auth 
+                onAuthSuccess={() => {
+                  setShowAuthModal(false)
+                  // handleStripeCheckout va fi apelat automat când utilizatorul se autentifică
+                }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   )
 }

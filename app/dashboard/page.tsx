@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo, Fragment, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import Auth from '@/components/Auth'
@@ -52,6 +52,7 @@ import {
   Video,
   Users,
   TrendingDown,
+  ShoppingCart,
 } from 'lucide-react'
 
 type Section = 'tooluri' | 'logs' | 'credite' | 'setari' | 'profil'
@@ -123,16 +124,16 @@ const ASPECT_RATIO_PRESETS: Record<AspectRatio, { width: number; height: number;
   },
 }
 
-const IMAGE_GENERATION_COST = 6
+const IMAGE_GENERATION_COST = 8
 const TEXT_GENERATION_COST = 3
 
 // Costuri pentru fiecare tool
 const TOOL_COSTS: Record<string, number> = {
   'strategie-client': 5,
-  'analiza-piata': 5,
-  'strategie-video': 4,
-  'copywriting': 3,
-  'planificare-conținut': 4,
+  'analiza-piata': 6,
+  'strategie-video': 6,
+  'copywriting': 4,
+  'planificare-conținut': 7,
 }
 
 // Traduceri pentru dashboard
@@ -296,6 +297,7 @@ interface CreditTransaction {
 
 function DashboardContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -1578,6 +1580,9 @@ function DashboardContent() {
         setSavedResultIds(prev => ({ ...prev, [toolId]: null }))
       }
       
+      // Resetează loading-ul imediat după ce am primit răspunsul și setat rezultatul
+      setToolLoading(prev => ({ ...prev, [toolId]: false }))
+      
       // Dacă este planificare de conținut, salvează calendarul principal
       if (toolId === 'planificare-conținut' && result.data) {
         console.log('📅 Planificare conținut result:', { 
@@ -1666,7 +1671,7 @@ function DashboardContent() {
       setNotification({ type: 'error', message: errorMessage })
       addNotification('error', errorMessage)
       setTimeout(() => setNotification(null), 5000)
-    } finally {
+      // Resetează loading-ul și în caz de eroare
       setToolLoading(prev => ({ ...prev, [toolId]: false }))
     }
   }
@@ -3821,8 +3826,6 @@ function DashboardContent() {
               </motion.div>
               <a 
                 href="https://adlence.vercel.app"
-                target="_blank"
-                rel="noopener noreferrer"
                 className="cursor-pointer hover:opacity-80 transition-opacity"
               >
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
@@ -4362,11 +4365,22 @@ function DashboardContent() {
                     </motion.div>
                   )}
                 </div>
-                {/* Credits Badge */}
-                <div className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-lg">
-                  <Coins className="w-5 h-5 text-purple-400" />
-                  <span className="text-sm font-bold text-white">{currentCredits}</span>
-                  <span className="text-xs text-gray-400">credite</span>
+                {/* Credits Badge & Buy Button */}
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-lg">
+                    <Coins className="w-5 h-5 text-purple-400" />
+                    <span className="text-sm font-bold text-white">{currentCredits}</span>
+                    <span className="text-xs text-gray-400">credite</span>
+                  </div>
+                  <motion.button
+                    onClick={() => router.push('/preturi')}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl"
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    <span className="text-sm">{settingsFormData.language === 'en' ? 'Buy Credits' : 'Cumpără Credite'}</span>
+                  </motion.button>
                 </div>
               </div>
             </div>
@@ -5066,50 +5080,45 @@ function DashboardContent() {
                 transition={{ duration: 0.3 }}
                 className="space-y-8"
               >
-                {/* Welcome Section cu workflow vizual */}
+                {/* Welcome Section cu workflow vizual - compact */}
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 border border-blue-500/30 rounded-2xl p-6 md:p-8 backdrop-blur-xl"
+                  className="relative bg-gradient-to-br from-blue-600/10 via-purple-600/10 to-pink-600/10 border border-blue-500/20 rounded-xl p-4 backdrop-blur-xl"
                 >
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-6 h-6 text-blue-300" />
-                    </div>
-                    <div className="flex-1">
-                      <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
+                        <Sparkles className="w-5 h-5 text-blue-300" />
+                      </div>
+                      <h2 className="text-lg md:text-xl font-bold text-white">
                         {settingsFormData.language === 'en' 
                           ? '🚀 Your Marketing Toolkit' 
                           : '🚀 Toolkit-ul Tău de Marketing'}
                       </h2>
-                      <p className="text-gray-300 text-sm md:text-base">
-                        {settingsFormData.language === 'en'
-                          ? 'Start with strategy, then create amazing content. Each tool connects to help you build a complete marketing campaign!'
-                          : 'Începe cu strategia, apoi creează conținut uimitor. Fiecare tool se conectează pentru a-ți construi o campanie completă de marketing!'}
-                      </p>
                     </div>
-                  </div>
-                  
-                  {/* Workflow Visualization */}
-                  <div className="mt-6 p-4 bg-gray-900/40 rounded-xl border border-gray-700/50">
-                    <p className="text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wide">
-                      {settingsFormData.language === 'en' ? '💡 Recommended Workflow' : '💡 Workflow Recomandat'}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs">
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/20 border border-blue-400/30 rounded-lg text-blue-300 font-medium">
-                        <Target className="w-3.5 h-3.5" />
-                        <span>{settingsFormData.language === 'en' ? 'Strategy' : 'Strategie'}</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/20 border border-purple-400/30 rounded-lg text-purple-300 font-medium">
-                        <PenTool className="w-3.5 h-3.5" />
-                        <span>{settingsFormData.language === 'en' ? 'Create' : 'Creare'}</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-pink-500/20 border border-pink-400/30 rounded-lg text-pink-300 font-medium">
-                        <Calendar className="w-3.5 h-3.5" />
-                        <span>{settingsFormData.language === 'en' ? 'Plan' : 'Planificare'}</span>
+                    
+                    {/* Workflow Visualization - compact și discret */}
+                    <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gray-900/60 rounded-lg border border-gray-700/50">
+                      <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mr-1">
+                        {settingsFormData.language === 'en' ? '💡 Workflow' : '💡 Workflow'}
+                      </span>
+                      <div className="flex items-center gap-1 text-[10px]">
+                        <div className="flex items-center gap-1 px-2 py-0.5 bg-blue-500/20 border border-blue-400/30 rounded text-blue-300 font-medium">
+                          <Target className="w-3 h-3" />
+                          <span>{settingsFormData.language === 'en' ? 'Strategy' : 'Strategie'}</span>
+                        </div>
+                        <ChevronRight className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                        <div className="flex items-center gap-1 px-2 py-0.5 bg-purple-500/20 border border-purple-400/30 rounded text-purple-300 font-medium">
+                          <PenTool className="w-3 h-3" />
+                          <span>{settingsFormData.language === 'en' ? 'Create' : 'Creare'}</span>
+                        </div>
+                        <ChevronRight className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                        <div className="flex items-center gap-1 px-2 py-0.5 bg-pink-500/20 border border-pink-400/30 rounded text-pink-300 font-medium">
+                          <Calendar className="w-3 h-3" />
+                          <span>{settingsFormData.language === 'en' ? 'Plan' : 'Planificare'}</span>
+                        </div>
                       </div>
                     </div>
                   </div>

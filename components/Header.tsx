@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Sparkles } from 'lucide-react'
+import { Menu, X, Sparkles, User as UserIcon, LogIn } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import type { User } from '@supabase/supabase-js'
 
 const navItems = [
   { name: 'Acasă', href: '/' },
@@ -17,7 +19,11 @@ const navItems = [
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [userProfile, setUserProfile] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const pathname = usePathname()
+  const router = useRouter()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +31,57 @@ export default function Header() {
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Verifică autentificarea utilizatorului
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const { data: { user: currentUser } } = await supabase.auth.getUser()
+        setUser(currentUser)
+
+        if (currentUser) {
+          // Încarcă profilul utilizatorului
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single()
+          
+          if (profile) {
+            setUserProfile(profile)
+          }
+        }
+      } catch (error) {
+        console.error('Error checking user:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkUser()
+
+    // Ascultă pentru schimbări de autentificare
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        // Reîncarcă profilul
+        supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data }) => {
+            if (data) setUserProfile(data)
+          })
+      } else {
+        setUserProfile(null)
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   return (
@@ -38,10 +95,10 @@ export default function Header() {
           : 'bg-transparent'
       }`}
     >
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 group">
+          <Link href="/" className="flex items-center space-x-2 group z-10">
             <motion.div
               whileHover={{ rotate: 360 }}
               transition={{ duration: 0.6 }}
@@ -66,8 +123,8 @@ export default function Header() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
+          {/* Desktop Navigation - Centrat */}
+          <div className="hidden md:flex items-center space-x-1 absolute left-1/2 transform -translate-x-1/2">
             {navItems.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -102,14 +159,42 @@ export default function Header() {
             })}
           </div>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <Link
-              href="/dashboard"
-              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-500/25"
-            >
-              Dashboard
-            </Link>
+          {/* CTA Button & User Info - Dreapta */}
+          <div className="hidden md:flex items-center gap-3 z-10">
+            {loading ? (
+              <div className="w-8 h-8 border-2 border-gray-600 border-t-blue-500 rounded-full animate-spin"></div>
+            ) : user ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-2 bg-gray-800/50 rounded-lg border border-gray-700/50">
+                  <UserIcon className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-white">
+                    {userProfile?.full_name || user.email?.split('@')[0] || 'Utilizator'}
+                  </span>
+                </div>
+                <Link
+                  href="/dashboard"
+                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-500/25"
+                >
+                  Dashboard
+                </Link>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="px-4 py-2 text-gray-300 hover:text-white transition-colors flex items-center gap-2"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Log In</span>
+                </button>
+                <Link
+                  href="/dashboard"
+                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-500/25"
+                >
+                  Dashboard
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -156,20 +241,57 @@ export default function Header() {
                   </motion.div>
                 )
               })}
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: navItems.length * 0.1 }}
-                className="pt-2"
-              >
-                <Link
-                  href="/dashboard"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg text-center"
+              {loading ? (
+                <div className="pt-2 flex justify-center">
+                  <div className="w-6 h-6 border-2 border-gray-600 border-t-blue-500 rounded-full animate-spin"></div>
+                </div>
+              ) : user ? (
+                <motion.div
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: navItems.length * 0.1 }}
+                  className="pt-2 space-y-2"
                 >
-                  Dashboard
-                </Link>
-              </motion.div>
+                  <div className="px-4 py-2 bg-gray-800/50 rounded-lg border border-gray-700/50 flex items-center gap-2">
+                    <UserIcon className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-white">
+                      {userProfile?.full_name || user.email?.split('@')[0] || 'Utilizator'}
+                    </span>
+                  </div>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg text-center"
+                  >
+                    Dashboard
+                  </Link>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: navItems.length * 0.1 }}
+                  className="pt-2 space-y-2"
+                >
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false)
+                      router.push('/dashboard')
+                    }}
+                    className="w-full px-4 py-3 text-gray-300 hover:text-white transition-colors flex items-center justify-center gap-2 border border-gray-700 rounded-lg"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>Log In</span>
+                  </button>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg text-center"
+                  >
+                    Dashboard
+                  </Link>
+                </motion.div>
+              )}
             </div>
           </motion.div>
         )}

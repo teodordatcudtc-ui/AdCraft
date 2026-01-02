@@ -46,10 +46,10 @@ export async function POST(request: NextRequest) {
     // Costuri pentru fiecare tool (excluzând design-publicitar)
     const toolCosts: Record<string, number> = {
       'strategie-client': 5,
-      'analiza-piata': 5,
-      'strategie-video': 4,
-      'copywriting': 3,
-      'planificare-conținut': 4,
+      'analiza-piata': 6,
+      'strategie-video': 6,
+      'copywriting': 4,
+      'planificare-conținut': 7,
     }
 
     const cost = toolCosts[toolId] || 3

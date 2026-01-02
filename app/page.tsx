@@ -1,10 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Sparkles, Zap, Target, Award, ArrowRight, Image as ImageIcon, Check, TrendingUp, Users, Clock, Settings, ChevronDown, ChevronUp } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Sparkles, Zap, Target, Award, ArrowRight, Image as ImageIcon, Check, TrendingUp, Users, Clock, Settings, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
+import { supabase } from '@/lib/supabase'
+import Auth from '@/components/Auth'
+import type { User } from '@supabase/supabase-js'
 
 type AspectRatio = '16:9' | '9:16' | '1:1' | '4:3'
 
@@ -50,6 +53,9 @@ const ASPECT_RATIO_PRESETS: Record<AspectRatio, { width: number; height: number;
 export default function Home() {
   const router = useRouter()
   const [isChecking, setIsChecking] = useState(true)
+  const [user, setUser] = useState<User | null>(null)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [selectedPackage, setSelectedPackage] = useState<typeof pricingPackages[0] | null>(null)
   
   // Toate hook-urile trebuie să fie apelate înainte de orice return condiționat
   const [prompt, setPrompt] = useState('')
@@ -78,6 +84,124 @@ export default function Home() {
     }
   }, [router])
 
+  const handleStripeCheckout = useCallback(async (pkg: typeof pricingPackages[0]) => {
+    // Verifică din nou utilizatorul pentru siguranță
+    const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
+    
+    if (!currentUser || userError) {
+      console.error('User not authenticated for checkout:', userError)
+      setSelectedPackage(pkg)
+      setShowAuthModal(true)
+      return
+    }
+
+    // Verifică sesiunea
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session || !session.user) {
+      console.error('No valid session for checkout')
+      setSelectedPackage(pkg)
+      setShowAuthModal(true)
+      return
+    }
+
+    // Utilizatorul este 100% logat - continuă cu Stripe
+    console.log('Starting Stripe checkout for package:', pkg.name, 'User:', currentUser.id)
+    
+    try {
+      // Obține token-ul de sesiune pentru autentificare în API
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      if (!currentSession?.access_token) {
+        throw new Error('No access token')
+      }
+
+      // Creează sesiunea de checkout
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentSession.access_token}`,
+        },
+        body: JSON.stringify({
+          packageName: pkg.name,
+          credits: pkg.credits,
+          price: pkg.price,
+          userId: currentUser.id,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to create checkout session')
+      }
+
+      const { url } = await response.json()
+      
+      if (!url) {
+        throw new Error('No checkout URL returned')
+      }
+
+      // Redirecționează către Stripe Checkout
+      window.location.href = url
+    } catch (error: any) {
+      console.error('Error during checkout:', error)
+      alert(error.message || 'Eroare la crearea sesiunii de plată. Te rugăm să încerci din nou.')
+    }
+  }, [])
+
+  // Verifică autentificarea utilizatorului
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const { data: { user: currentUser } } = await supabase.auth.getUser()
+        setUser(currentUser)
+      } catch (error) {
+        console.error('Error checking user:', error)
+      }
+    }
+
+    checkUser()
+
+    // Ascultă pentru schimbări de autentificare
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        // Utilizatorul s-a logat, închide modalul și continuă cu Stripe
+        setShowAuthModal(false)
+        if (selectedPackage) {
+          handleStripeCheckout(selectedPackage)
+        }
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [selectedPackage, handleStripeCheckout])
+
+  const handleChoosePlan = async (pkg: typeof pricingPackages[0]) => {
+    // Verifică dacă utilizatorul este logat
+    const { data: { user: currentUser } } = await supabase.auth.getUser()
+    
+    if (!currentUser) {
+      // Utilizatorul nu este logat - deschide modalul de autentificare
+      setSelectedPackage(pkg)
+      setShowAuthModal(true)
+      return
+    }
+
+    // Utilizatorul este logat - verifică din nou pentru siguranță
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session || !session.user) {
+      // Sesiunea nu este validă - deschide modalul de autentificare
+      setSelectedPackage(pkg)
+      setShowAuthModal(true)
+      return
+    }
+
+    // Utilizatorul este 100% logat - continuă cu Stripe
+    handleStripeCheckout(pkg)
+  }
+
   // Dacă se verifică autentificarea, afișează loading
   if (isChecking) {
     return (
@@ -100,7 +224,7 @@ export default function Home() {
 
   // Costuri în credite
   const TEXT_GENERATION_COST = 3
-  const IMAGE_GENERATION_COST = 6
+  const IMAGE_GENERATION_COST = 8
   
   // Calculează costul total
   const calculateCost = () => {
@@ -220,13 +344,24 @@ export default function Home() {
 
   const pricingPackages = [
     {
-      name: 'Pachet 1',
-      credits: 50,
+      name: 'Test',
+      credits: 1,
+      price: 0.10,
+      features: [
+        '1 credit pentru testare',
+        'Test Stripe integration',
+      ],
+      color: 'from-green-500 to-emerald-500',
+      borderColor: 'border-green-500/50',
+    },
+    {
+      name: 'Starter',
+      credits: 40,
       price: 10,
       features: [
-        '50 credite',
-        '~16 generări de text (3 credite)',
-        '~8 generări de imagini (6 credite)',
+        '40 credite',
+        '~10 generări copywriting (4 credite)',
+        '~5 generări imagini (8 credite)',
         'Sau combinații personalizate',
         'Suport email',
       ],
@@ -234,33 +369,33 @@ export default function Home() {
       borderColor: 'border-blue-500/50',
     },
     {
-      name: 'Pachet 2',
-      credits: 120,
-      price: 20,
-      features: [
-        '120 credite',
-        '~40 generări de text (3 credite)',
-        '~20 generări de imagini (6 credite)',
-        'Sau combinații personalizate',
-        'Suport priorititar',
-      ],
-      color: 'from-purple-500 to-pink-500',
-      borderColor: 'border-purple-500/50',
-      popular: true,
-    },
-    {
-      name: 'Pachet 3',
-      credits: 350,
+      name: 'Pro',
+      credits: 280,
       price: 50,
       features: [
-        '350 credite',
-        '~116 generări de text (3 credite)',
-        '~58 generări de imagini (6 credite)',
+        '280 credite',
+        '~70 generări copywriting (4 credite)',
+        '~35 generări imagini (8 credite)',
         'Sau combinații personalizate',
         'Suport dedicat',
       ],
       color: 'from-orange-500 to-red-500',
       borderColor: 'border-orange-500/50',
+      popular: true,
+    },
+    {
+      name: 'Growth',
+      credits: 100,
+      price: 20,
+      features: [
+        '100 credite',
+        '~25 generări copywriting (4 credite)',
+        '~12 generări imagini (8 credite)',
+        'Sau combinații personalizate',
+        'Suport priorititar',
+      ],
+      color: 'from-purple-500 to-pink-500',
+      borderColor: 'border-purple-500/50',
     },
   ]
 
@@ -375,14 +510,14 @@ export default function Home() {
               transition={{ duration: 0.6 }}
             >
               <motion.div
-                className="inline-flex items-center space-x-2 px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full mb-6 block md:inline-flex mx-auto md:mx-0"
+                className="inline-flex items-center space-x-2 px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full mb-6 mx-auto md:mx-0"
                 whileHover={{ scale: 1.05 }}
               >
                 <Sparkles className="w-3 h-3 text-green-400" />
                 <span className="text-xs text-green-300 font-medium">Powered by AdLence.ai</span>
               </motion.div>
 
-              <h1 className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight text-center md:text-left">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight text-center md:text-left">
                 <span className="text-white">Noul Standard pentru</span>
                 <br />
                 <span className="bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent">
@@ -1153,7 +1288,7 @@ export default function Home() {
               </span>
             </h2>
             <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              Alege pachetul de credite perfect pentru nevoile tale. Folosește creditele pentru generare text (3 credite) sau imagini (6 credite).
+              Alege pachetul de credite perfect pentru nevoile tale. Copywriting (4 credite), imagini (8 credite), analiză de piață (6 credite), strategie video (6 credite), planificare (7 credite).
             </p>
           </motion.div>
 
@@ -1213,6 +1348,7 @@ export default function Home() {
                 </ul>
 
                 <motion.button
+                  onClick={() => handleChoosePlan(pkg)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className={`w-full py-4 px-6 font-bold text-base rounded-lg transition-all duration-300 tracking-wide ${
@@ -1229,6 +1365,33 @@ export default function Home() {
           </div>
         </section>
       </div>
+
+      {/* Auth Modal */}
+      <AnimatePresence>
+        {showAuthModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-[#0a0a0f]"
+          >
+            <button
+              onClick={() => setShowAuthModal(false)}
+              className="absolute top-6 right-6 p-2 text-gray-400 hover:text-white transition-colors z-10 bg-gray-800/50 rounded-full"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="min-h-screen flex items-center justify-center p-4">
+              <Auth 
+                onAuthSuccess={() => {
+                  setShowAuthModal(false)
+                  // handleStripeCheckout va fi apelat automat când utilizatorul se autentifică
+                }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   )
 }
