@@ -165,7 +165,7 @@ export default function Header() {
               <div className="w-8 h-8 border-2 border-gray-600 border-t-blue-500 rounded-full animate-spin"></div>
             ) : user ? (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 px-3 py-2 bg-gray-800/50 rounded-lg border border-gray-700/50">
+                <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-800/50 rounded-lg border border-gray-700/50 h-[42px]">
                   <UserIcon className="w-4 h-4 text-gray-400" />
                   <span className="text-sm text-white">
                     {userProfile?.full_name || user.email?.split('@')[0] || 'Utilizator'}

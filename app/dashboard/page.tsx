@@ -4390,10 +4390,112 @@ function DashboardContent() {
                   const toolName = settingsFormData.language === 'en' ? tool.nameEn : tool.name
                   const toolDescription = settingsFormData.language === 'en' ? tool.descriptionEn : tool.description
                   
+                  // Definește tool-urile conectate și tips pentru fiecare tool (mutat aici pentru a fi disponibil pentru design-publicitar)
+                  const getToolTips = (toolId: ToolId): string[] => {
+                    const tips: Record<ToolId, { ro: string[], en: string[] }> = {
+                      'strategie-client': {
+                        ro: [
+                          '💡 Fii specific despre problema pe care o rezolvi',
+                          '🎯 Gândește-te la ce îi face pe clienți să cumpere',
+                          '✨ Mesajul tău trebuie să fie clar și memorabil'
+                        ],
+                        en: [
+                          '💡 Be specific about the problem you solve',
+                          '🎯 Think about what makes clients buy',
+                          '✨ Your message needs to be clear and memorable'
+                        ]
+                      },
+                      'analiza-piata': {
+                        ro: [
+                          '🔍 Uită-te la ce funcționează pentru competitori',
+                          '📊 Identifică pattern-uri în strategiile de succes',
+                          '🚀 Găsește oportunități unice pentru brand-ul tău'
+                        ],
+                        en: [
+                          '🔍 Look at what works for competitors',
+                          '📊 Identify patterns in successful strategies',
+                          '🚀 Find unique opportunities for your brand'
+                        ]
+                      },
+                      'strategie-video': {
+                        ro: [
+                          '🎬 Primele 3 secunde sunt cruciale!',
+                          '📱 Adaptează conținutul pentru platformă',
+                          '💬 Păstrează mesajul simplu și direct'
+                        ],
+                        en: [
+                          '🎬 The first 3 seconds are crucial!',
+                          '📱 Adapt content for the platform',
+                          '💬 Keep the message simple and direct'
+                        ]
+                      },
+                      'copywriting': {
+                        ro: [
+                          '✍️ Scrie ca și cum ai vorbi cu un prieten',
+                          '🎯 Un call-to-action clar = mai multe conversii',
+                          '💪 Evită jargon-ul, folosește cuvinte simple'
+                        ],
+                        en: [
+                          '✍️ Write like you\'re talking to a friend',
+                          '🎯 A clear call-to-action = more conversions',
+                          '💪 Avoid jargon, use simple words'
+                        ]
+                      },
+                      'design-publicitar': {
+                        ro: [
+                          '🎨 Contrastul face textul să iasă în evidență',
+                          '📐 Folosește spațiu alb pentru respirație',
+                          '✨ Menține brand-ul consistent în toate design-urile'
+                        ],
+                        en: [
+                          '🎨 Contrast makes text stand out',
+                          '📐 Use white space for breathing room',
+                          '✨ Keep branding consistent across all designs'
+                        ]
+                      },
+                      'planificare-conținut': {
+                        ro: [
+                          '📅 Consistența este cheia succesului',
+                          '🔄 Mixă tipuri de conținut (educativ, fun, promovare)',
+                          '⏰ Postează când audiența ta este activă'
+                        ],
+                        en: [
+                          '📅 Consistency is key to success',
+                          '🔄 Mix content types (educational, fun, promotional)',
+                          '⏰ Post when your audience is active'
+                        ]
+                      }
+                    }
+                    const toolTips = tips[toolId] || { ro: [], en: [] }
+                    return settingsFormData.language === 'en' ? toolTips.en : toolTips.ro
+                  }
+
+                  const getNextSteps = (toolId: ToolId): { id: ToolId, name: string, nameEn: string }[] => {
+                    const connections: Record<ToolId, ToolId[]> = {
+                      'strategie-client': ['copywriting', 'design-publicitar'],
+                      'analiza-piata': ['strategie-client', 'planificare-conținut'],
+                      'strategie-video': ['copywriting', 'design-publicitar'],
+                      'copywriting': ['design-publicitar', 'planificare-conținut'],
+                      'design-publicitar': ['planificare-conținut'],
+                      'planificare-conținut': [],
+                    }
+                    const nextToolIds = connections[toolId] || []
+                    return nextToolIds
+                      .map(id => {
+                        const found = toolGroups.flatMap(g => g.tools).find(t => t.id === id)
+                        return found ? { id: found.id as ToolId, name: found.name, nameEn: found.nameEn } : null
+                      })
+                      .filter(Boolean) as { id: ToolId, name: string, nameEn: string }[]
+                  }
+                  
                   // Dacă este tool-ul "Design Publicitar", afișăm direct formularul de generare reclamă
                   if (activeTool === 'design-publicitar') {
+                    const toolTips = getToolTips(activeTool)
+                    const nextSteps = getNextSteps(activeTool)
+                    
                     return (
-                      <div className="w-full max-w-4xl space-y-6">
+                      <div className="w-full flex justify-center">
+                        <div className="w-full max-w-4xl space-y-6">
                         {/* Header îmbunătățit pentru Design Publicitar */}
                         <div className="relative">
                           <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-pink-600/10 to-blue-600/10 rounded-2xl blur-2xl animate-pulse"></div>
@@ -4756,7 +4858,93 @@ function DashboardContent() {
                           </motion.button>
                         </form>
                         </div>
+
+                        {/* Sfaturi Pro și Următorii Pași - similar cu celelalte tool-uri */}
+                        {(toolTips.length > 0 || nextSteps.length > 0) && (
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Sfaturi Pro */}
+                            {toolTips.length > 0 && (
+                              <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="bg-gradient-to-br from-blue-600/10 to-purple-600/10 border border-blue-500/20 rounded-xl p-5 backdrop-blur-xl"
+                              >
+                                <div className="flex items-center gap-2 mb-4">
+                                  <Sparkles className="w-5 h-5 text-blue-400" />
+                                  <h4 className="text-lg font-bold text-white">
+                                    {settingsFormData.language === 'en' ? '💡 Pro Tips' : '💡 Sfaturi Pro'}
+                                  </h4>
+                                </div>
+                                <ul className="space-y-3">
+                                  {toolTips.map((tip, idx) => (
+                                    <motion.li
+                                      key={idx}
+                                      initial={{ opacity: 0, y: 10 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      transition={{ delay: 0.3 + idx * 0.1 }}
+                                      className="text-sm text-gray-300 leading-relaxed flex items-start gap-2"
+                                    >
+                                      <span className="text-blue-400 mt-0.5 flex-shrink-0">•</span>
+                                      <span>{tip}</span>
+                                    </motion.li>
+                                  ))}
+                                </ul>
+                              </motion.div>
+                            )}
+
+                            {/* Următorii Pași */}
+                            {nextSteps.length > 0 && (
+                              <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.4 }}
+                                className="bg-gradient-to-br from-purple-600/10 to-pink-600/10 border border-purple-500/20 rounded-xl p-5 backdrop-blur-xl"
+                              >
+                                <div className="flex items-center gap-2 mb-4">
+                                  <ArrowRight className="w-5 h-5 text-purple-400" />
+                                  <h4 className="text-lg font-bold text-white">
+                                    {settingsFormData.language === 'en' ? '🚀 Next Steps' : '🚀 Următorii Pași'}
+                                  </h4>
+                                </div>
+                                <p className="text-xs text-gray-400 mb-3">
+                                  {settingsFormData.language === 'en'
+                                    ? 'Continue your workflow with these connected tools:'
+                                    : 'Continuă workflow-ul cu aceste tool-uri conectate:'}
+                                </p>
+                                <div className="space-y-2">
+                                  {nextSteps.map((step) => {
+                                    const stepTool = toolGroups.flatMap(g => g.tools).find(t => t.id === step.id)
+                                    const StepIcon = stepTool?.icon || Wrench
+                                    return (
+                                      <motion.button
+                                        key={step.id}
+                                        onClick={() => setActiveTool(step.id)}
+                                        whileHover={{ scale: 1.02, x: 4 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="w-full p-3 bg-gray-800/50 hover:bg-gray-800/70 border border-gray-700/50 hover:border-purple-500/50 rounded-lg transition-all text-left group"
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center group-hover:from-purple-500/30 group-hover:to-pink-500/30 transition-all">
+                                            <StepIcon className="w-4 h-4 text-purple-400" />
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-semibold text-white group-hover:text-purple-300 transition-colors">
+                                              {settingsFormData.language === 'en' ? step.nameEn : step.name}
+                                            </p>
+                                          </div>
+                                          <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-purple-400 transition-colors flex-shrink-0" />
+                                        </div>
+                                      </motion.button>
+                                    )
+                                  })}
+                                </div>
+                              </motion.div>
+                            )}
+                          </div>
+                        )}
                       </div>
+                    </div>
                     )
                   }
                   
