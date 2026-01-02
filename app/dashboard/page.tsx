@@ -134,6 +134,7 @@ const TOOL_COSTS: Record<string, number> = {
   'strategie-video': 6,
   'copywriting': 4,
   'planificare-conținut': 7,
+  'design-publicitar': 9,
 }
 
 // Traduceri pentru dashboard
@@ -5271,7 +5272,6 @@ function DashboardContent() {
                                       <h4 className="text-base font-bold text-white group-hover:text-blue-400 transition-colors">
                                         {settingsFormData.language === 'en' ? tool.nameEn : tool.name}
                                       </h4>
-                                      <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-blue-400 transition-colors flex-shrink-0 mt-0.5" />
                                     </div>
                                     <p className="text-sm text-gray-400 line-clamp-2 mb-2">
                                       {settingsFormData.language === 'en' ? tool.descriptionEn : tool.description}
@@ -5296,7 +5296,7 @@ function DashboardContent() {
                                 {/* Cost badge */}
                                 <div className="absolute top-3 right-3 px-2 py-1 bg-purple-500/20 border border-purple-400/30 rounded-md">
                                   <span className="text-[10px] font-semibold text-purple-300">
-                                    {TOOL_COSTS[tool.id] || TEXT_GENERATION_COST} {settingsFormData.language === 'en' ? 'credits' : 'credite'}
+                                    {tool.id === 'design-publicitar' ? IMAGE_GENERATION_COST : (TOOL_COSTS[tool.id] || TEXT_GENERATION_COST)} {settingsFormData.language === 'en' ? 'credits' : 'credite'}
                                   </span>
                                 </div>
                               </motion.button>
