@@ -53,6 +53,7 @@ import {
   Users,
   TrendingDown,
   ShoppingCart,
+  Info,
 } from 'lucide-react'
 
 type Section = 'tooluri' | 'logs' | 'credite' | 'setari' | 'profil'
@@ -1925,6 +1926,16 @@ function DashboardContent() {
             )}
           </button>
 
+          {/* Disclaimer subtil */}
+          <div className="flex items-start gap-2 mt-3 px-3 py-2 bg-gray-800/30 border border-gray-700/30 rounded-lg">
+            <Info className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
+            <p className="text-[10px] text-gray-500 leading-relaxed">
+              {settingsFormData.language === 'en' 
+                ? 'AI-generated content. Results may vary and should be reviewed.' 
+                : 'Conținut generat de AI. Rezultatele pot varia și ar trebui verificate.'}
+            </p>
+          </div>
+
           {/* Buton pentru rezultate salvate */}
           <button
             type="button"
@@ -2031,6 +2042,16 @@ function DashboardContent() {
                   </ul>
                 </div>
               )}
+              
+              {/* Disclaimer subtil la sfârșitul rezultatelor */}
+              <div className="flex items-start gap-2 mt-4 pt-4 border-t border-gray-700/30">
+                <Info className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
+                <p className="text-[10px] text-gray-500 leading-relaxed">
+                  {settingsFormData.language === 'en' 
+                    ? 'AI-generated content. Results may vary and should be reviewed.' 
+                    : 'Conținut generat de AI. Rezultatele pot varia și ar trebui verificate.'}
+                </p>
+              </div>
             </div>
           )}
         </form>
@@ -4830,6 +4851,16 @@ function DashboardContent() {
                                 <Download className="w-4 h-4" />
                                 Descarcă
                               </button>
+                              
+                              {/* Disclaimer subtil */}
+                              <div className="flex items-start gap-2 px-3 py-2 bg-gray-800/30 border border-gray-700/30 rounded-lg">
+                                <Info className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
+                                <p className="text-[10px] text-gray-500 leading-relaxed">
+                                  {settingsFormData.language === 'en' 
+                                    ? 'AI-generated content. Results may vary and should be reviewed.' 
+                                    : 'Conținut generat de AI. Rezultatele pot varia și ar trebui verificate.'}
+                                </p>
+                              </div>
                             </div>
                           )}
 
@@ -4863,6 +4894,16 @@ function DashboardContent() {
                               </>
                             )}
                           </motion.button>
+                          
+                          {/* Disclaimer subtil */}
+                          <div className="flex items-start gap-2 mt-3 px-3 py-2 bg-gray-800/30 border border-gray-700/30 rounded-lg">
+                            <Info className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
+                            <p className="text-[10px] text-gray-500 leading-relaxed">
+                              {settingsFormData.language === 'en' 
+                                ? 'AI-generated content. Results may vary and should be reviewed.' 
+                                : 'Conținut generat de AI. Rezultatele pot varia și ar trebui verificate.'}
+                            </p>
+                          </div>
                         </form>
                               </div>
                             </div>
@@ -5215,6 +5256,16 @@ function DashboardContent() {
                                     <Download className="w-4 h-4" />
                                     Descarcă
                                   </button>
+                                  
+                                  {/* Disclaimer subtil */}
+                                  <div className="flex items-start gap-2 px-3 py-2 bg-gray-800/30 border border-gray-700/30 rounded-lg">
+                                    <Info className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
+                                    <p className="text-[10px] text-gray-500 leading-relaxed">
+                                      {settingsFormData.language === 'en' 
+                                        ? 'AI-generated content. Results may vary and should be reviewed.' 
+                                        : 'Conținut generat de AI. Rezultatele pot varia și ar trebui verificate.'}
+                                    </p>
+                                  </div>
                                 </div>
                               )}
 

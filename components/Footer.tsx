@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Sparkles, Github, Twitter, Linkedin, Mail } from 'lucide-react'
+import { Sparkles, Github, Twitter, Linkedin, Mail, Info } from 'lucide-react'
 
 const footerLinks = {
   product: [
@@ -134,8 +134,18 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Disclaimer subtil */}
+        <div className="pt-6 border-t border-gray-800/50">
+          <div className="flex items-start gap-2 max-w-2xl">
+            <Info className="w-3.5 h-3.5 text-gray-600 mt-0.5 flex-shrink-0" />
+            <p className="text-[10px] text-gray-600 leading-relaxed">
+              Conținut generat de AI. Rezultatele pot varia și ar trebui verificate. AdLence.ai utilizează inteligență artificială pentru a genera conținut, iar rezultatele pot conține erori ocazionale.
+            </p>
+          </div>
+        </div>
+
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
+        <div className="pt-6 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-500 text-sm mb-4 md:mb-0">
             © {new Date().getFullYear()} AdLence.ai. Toate drepturile rezervate.
           </p>
