@@ -510,7 +510,7 @@ export default function Home() {
               transition={{ duration: 0.6 }}
             >
               <motion.div
-                className="inline-flex items-center space-x-2 px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full mb-6 mx-auto md:mx-0"
+                className="flex items-center justify-center md:justify-start space-x-2 px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full mb-6 w-full md:w-auto md:inline-flex"
                 whileHover={{ scale: 1.05 }}
               >
                 <Sparkles className="w-3 h-3 text-green-400" />
