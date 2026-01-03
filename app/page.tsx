@@ -509,13 +509,15 @@ export default function Home() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <motion.div
-                className="flex items-center justify-center md:justify-start space-x-2 px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full mb-6 w-full md:w-auto md:inline-flex"
-                whileHover={{ scale: 1.05 }}
-              >
-                <Sparkles className="w-3 h-3 text-green-400" />
-                <span className="text-xs text-green-300 font-medium">Powered by AdLence.ai</span>
-              </motion.div>
+              <div className="flex justify-center md:justify-start mb-6">
+                <motion.div
+                  className="inline-flex items-center space-x-2 px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <Sparkles className="w-3 h-3 text-green-400" />
+                  <span className="text-xs text-green-300 font-medium">Powered by AdLence.ai</span>
+                </motion.div>
+              </div>
 
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight text-center md:text-left">
                 <span className="text-white">Noul Standard pentru</span>
