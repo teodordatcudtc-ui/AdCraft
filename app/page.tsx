@@ -534,11 +534,24 @@ export default function Home() {
               <p className="md:hidden text-base text-gray-400 mb-6 leading-relaxed text-center">
                 Platformă avansată cu tool-uri de marketing pentru a-ți crește business-ul.
               </p>
-              <p className="hidden md:block text-lg text-gray-400 mb-8 leading-relaxed max-w-xl">
+              <p className="hidden md:block text-lg text-gray-400 mb-6 leading-relaxed max-w-xl">
                 AdLence.ai este o platformă avansată cu multiple tool-uri de marketing pentru nevoile tale. 
                 De la generarea de reclame și copywriting, la analiză de piață și planificare de conținut - 
                 tot ce ai nevoie pentru a-ți crește business-ul într-un singur loc.
               </p>
+
+              {/* SEO Content Section - Hidden visually but readable by search engines */}
+              <div className="hidden md:block mb-8 max-w-xl">
+                <p className="text-base text-gray-500 leading-relaxed mb-4">
+                  AdLence.ai reprezintă soluția completă pentru <strong>marketing digital în România cu AI</strong>, oferind business-urilor din țară acces la tehnologii avansate de inteligență artificială pentru crearea de campanii publicitare eficiente și optimizate. Platforma noastră combină puterea inteligenței artificiale cu expertiza în domeniul marketingului digital, permițând companiilor să genereze reclame profesionale, conținut optimizat și strategii de marketing personalizate în timp record.
+                </p>
+                <p className="text-base text-gray-500 leading-relaxed mb-4">
+                  În contextul pieței de <strong>marketing digital din România</strong>, AdLence.ai se poziționează ca lider în domeniul soluțiilor automate de marketing, oferind tool-uri inovatoare care transformă modul tradițional de creare a conținutului publicitar. Prin utilizarea tehnologiilor de AI, platforma noastră permite generarea automată de reclame, copywriting optimizat pentru conversie, imagini publicitare de înaltă calitate și analize detaliate ale pieței și concurenților, toate acestea fiind adaptate specific pentru nevoile business-urilor românești.
+                </p>
+                <p className="text-base text-gray-500 leading-relaxed">
+                  Fie că ești o agenție de marketing digital din București sau un business local care dorește să-și extindă prezența online, AdLence.ai oferă soluții scalabile și accesibile pentru toate tipurile de companii. Platforma noastră de <strong>marketing digital cu AI</strong> este construită pentru a răspunde provocărilor unice ale pieței românești, oferind suport în limba română și adaptare culturală pentru conținutul generat, asigurând astfel că mesajele tale publicitare rezonează perfect cu audiența țintă.
+                </p>
+              </div>
 
               <div className="flex flex-wrap gap-4 mb-8 justify-center md:justify-start">
                 <motion.button
@@ -1086,7 +1099,7 @@ export default function Home() {
               <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-xl mb-6">
                 <Target className="w-8 h-8 text-blue-400" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">Analiză de Piață & Concurență</h3>
+              <h3 className="text-2xl font-bold text-white mb-4">Analiză de Piață și Concurență</h3>
               <p className="text-gray-400 mb-6 leading-relaxed flex-grow">
                 Analizează piața și competitorii pentru a vedea ce funcționează deja. 
                 Obține insights valoroase despre strategiile care marchează în industria ta.
@@ -1097,7 +1110,7 @@ export default function Home() {
                 whileTap={{ scale: 0.95 }}
                 className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 mt-auto"
               >
-                <span>Încearcă</span>
+                <span>Analizează Piața</span>
                 <ArrowRight className="w-4 h-4" />
               </motion.button>
             </motion.div>
@@ -1125,7 +1138,7 @@ export default function Home() {
                 whileTap={{ scale: 0.95 }}
                 className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 mt-auto"
               >
-                <span>Încearcă</span>
+                <span>Generează Copywriting</span>
                 <ArrowRight className="w-4 h-4" />
               </motion.button>
             </motion.div>
@@ -1153,7 +1166,7 @@ export default function Home() {
                 whileTap={{ scale: 0.95 }}
                 className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-green-500/25 flex items-center justify-center gap-2 mt-auto"
               >
-                <span>Încearcă</span>
+                <span>Planifică Conținut</span>
                 <ArrowRight className="w-4 h-4" />
               </motion.button>
             </motion.div>
@@ -1289,9 +1302,18 @@ export default function Home() {
                 Pachete de Prețuri
               </span>
             </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-6">
               Alege pachetul de credite perfect pentru nevoile tale. Copywriting (4 credite), imagini (9 credite), analiză de piață (6 credite), strategie video (6 credite), planificare (7 credite).
             </p>
+            {/* SEO Content for Pricing Section */}
+            <div className="max-w-4xl mx-auto text-center">
+              <p className="text-base text-gray-500 leading-relaxed mb-4">
+                Pachetele noastre de <strong>marketing digital cu AI</strong> sunt concepute pentru a răspunde nevoilor diverse ale business-urilor din România, de la startup-uri care doresc să testeze platforma până la companii mari care necesită volume mari de conținut generat. Fiecare pachet oferă flexibilitate maximă în utilizarea creditelor, permițându-ți să alegi exact ce tool-uri de marketing digital ai nevoie pentru fiecare proiect, fie că vorbim despre generare de reclame, copywriting optimizat pentru conversie, analize de piață sau planificare strategică de conținut.
+              </p>
+              <p className="text-base text-gray-500 leading-relaxed">
+                Sistemul nostru de credite pentru <strong>marketing digital în România</strong> este transparent și fără costuri ascunse, permițându-ți să controlezi exact bugetul alocat pentru fiecare tip de serviciu. Creditele nu expiră, oferind flexibilitate completă în planificarea campaniilor tale de marketing, iar platforma noastră de inteligență artificială generează conținut de înaltă calitate adaptat specific pentru piața românească și audiența ta țintă.
+              </p>
+            </div>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">

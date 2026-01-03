@@ -5,10 +5,10 @@ import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
   title: {
-    default: 'AdLence.ai - Marketing Digital în România cu AI | Generare Reclame AI',
-    template: '%s | AdLence.ai - Marketing Digital cu AI'
+    default: 'AdLence.ai - Marketing Digital România cu AI',
+    template: '%s | AdLence.ai'
   },
-  description: 'Platformă avansată de marketing digital în România cu AI. Generează reclame, copywriting, imagini și strategii de marketing cu inteligență artificială. Soluții complete pentru business-ul tău.',
+  description: 'Platformă marketing digital în România cu AI. Generează reclame, copywriting și imagini cu inteligență artificială. Soluții complete pentru business.',
   keywords: [
     'marketing digital românia',
     'marketing digital cu AI',
@@ -142,6 +142,10 @@ export default function RootLayout({
   return (
     <html lang="ro">
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
