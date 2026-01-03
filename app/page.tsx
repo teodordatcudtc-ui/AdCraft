@@ -558,7 +558,7 @@ export default function Home() {
               </div>
 
               {/* Stats */}
-              <div className="flex flex-wrap gap-6 mt-8 justify-center md:justify-start">
+              <div className="flex flex-nowrap gap-3 sm:gap-4 md:gap-6 mt-8 justify-center md:justify-start overflow-x-auto">
                 {stats.map((stat, index) => {
                   const Icon = stat.icon
                   return (
@@ -567,11 +567,11 @@ export default function Home() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 + index * 0.1 }}
-                      className="flex items-center space-x-2"
+                      className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0"
                     >
-                      <div className="w-2 h-2 bg-green-400 rounded-full" />
-                      <span className="text-sm font-semibold text-white">{stat.value}</span>
-                      <span className="text-xs text-gray-400">{stat.label}</span>
+                      <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0" />
+                      <span className="text-xs sm:text-sm font-semibold text-white whitespace-nowrap">{stat.value}</span>
+                      <span className="text-[10px] sm:text-xs text-gray-400 whitespace-nowrap">{stat.label}</span>
                     </motion.div>
                   )
                 })}
