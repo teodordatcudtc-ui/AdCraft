@@ -36,15 +36,15 @@ export default function Contact() {
     {
       icon: Mail,
       title: 'Email',
-      content: 'contact@agentie-reclame.ro',
-      link: 'mailto:contact@agentie-reclame.ro',
+      content: 'teodordatcu.dtc@gmail.com',
+      link: 'mailto:teodordatcu.dtc@gmail.com',
       color: 'from-blue-500 to-cyan-500',
     },
     {
       icon: Phone,
       title: 'Telefon',
-      content: '+40 123 456 789',
-      link: 'tel:+40123456789',
+      content: '0762444577',
+      link: 'tel:0762444577',
       color: 'from-purple-500 to-pink-500',
     },
     {
@@ -212,18 +212,37 @@ export default function Contact() {
               className="p-6 bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 rounded-xl"
             >
               <h3 className="text-white font-semibold mb-4">Urmărește-ne</h3>
-              <div className="flex space-x-4">
-                {['Twitter', 'LinkedIn', 'GitHub'].map((social, index) => (
-                  <motion.a
-                    key={social}
-                    href="#"
-                    whileHover={{ scale: 1.1, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="p-2 bg-gray-800/50 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors"
-                  >
-                    {social}
-                  </motion.a>
-                ))}
+              <div className="flex flex-wrap gap-3">
+                <motion.a
+                  href="https://www.instagram.com/adlence.ai/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 rounded-lg text-white font-medium transition-all text-sm"
+                >
+                  Instagram
+                </motion.a>
+                <motion.a
+                  href="https://www.tiktok.com/@adlence.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-2 bg-gradient-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-700 rounded-lg text-white font-medium transition-all text-sm"
+                >
+                  TikTok
+                </motion.a>
+                <motion.a
+                  href="https://www.facebook.com/profile.php?id=61580539661853"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-lg text-white font-medium transition-all text-sm"
+                >
+                  Facebook
+                </motion.a>
               </div>
             </motion.div>
           </motion.div>
