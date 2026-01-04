@@ -12,9 +12,6 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   swcMinify: true,
-  experimental: {
-    optimizeCss: true,
-  },
 }
 
 module.exports = nextConfig
