@@ -1,13 +1,19 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, Zap, Target, Award, ArrowRight, Image as ImageIcon, Check, TrendingUp, Users, Clock, Settings, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 import { supabase } from '@/lib/supabase'
-import Auth from '@/components/Auth'
+import dynamic from 'next/dynamic'
 import type { User } from '@supabase/supabase-js'
+
+// Lazy load Auth component - se încarcă doar când e necesar
+const Auth = dynamic(() => import('@/components/Auth'), {
+  ssr: false,
+  loading: () => null,
+})
 
 type AspectRatio = '16:9' | '9:16' | '1:1' | '4:3'
 
@@ -74,6 +80,7 @@ export default function Home() {
     guidanceScale: 7.5,
     numInferenceSteps: 20,
   })
+  const [currentToolIndex, setCurrentToolIndex] = useState(0)
 
   // Verifică autentificarea admin la mount
   useEffect(() => {
@@ -178,7 +185,104 @@ export default function Home() {
     }
   }, [selectedPackage, handleStripeCheckout])
 
-  const handleChoosePlan = async (pkg: typeof pricingPackages[0]) => {
+  // Auto-scroll carusel pentru tool-uri pe mobile
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentToolIndex((prev) => (prev + 1) % 3)
+    }, 5000) // 5 secunde
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // Costuri în credite
+  const TEXT_GENERATION_COST = 3
+  const IMAGE_GENERATION_COST = 9
+  
+  // Calculează costul total - memoized (trebuie înainte de orice return)
+  const calculateCost = useMemo(() => {
+    return generateOnlyText ? TEXT_GENERATION_COST : IMAGE_GENERATION_COST
+  }, [generateOnlyText])
+
+  // Memoized pricing packages (trebuie înainte de orice return)
+  const pricingPackages = useMemo(() => [
+    {
+      name: 'Test',
+      credits: 1,
+      price: 0.50,
+      features: [
+        '1 credit pentru testare',
+        'Test Stripe integration',
+      ],
+      color: 'from-green-500 to-emerald-500',
+      borderColor: 'border-green-500/50',
+    },
+    {
+      name: 'Starter',
+      credits: 40,
+      price: 10,
+      features: [
+        '40 credite',
+        '~10 generări copywriting (4 credite)',
+        '~4 generări imagini (9 credite)',
+        'Sau combinații personalizate',
+        'Suport email',
+      ],
+      color: 'from-blue-500 to-cyan-500',
+      borderColor: 'border-blue-500/50',
+    },
+    {
+      name: 'Pro',
+      credits: 280,
+      price: 50,
+      features: [
+        '280 credite',
+        '~70 generări copywriting (4 credite)',
+        '~31 generări imagini (9 credite)',
+        'Sau combinații personalizate',
+        'Suport dedicat',
+      ],
+      color: 'from-orange-500 to-red-500',
+      borderColor: 'border-orange-500/50',
+      popular: true,
+    },
+    {
+      name: 'Growth',
+      credits: 100,
+      price: 20,
+      features: [
+        '100 credite',
+        '~25 generări copywriting (4 credite)',
+        '~11 generări imagini (9 credite)',
+        'Sau combinații personalizate',
+        'Suport priorititar',
+      ],
+      color: 'from-purple-500 to-pink-500',
+      borderColor: 'border-purple-500/50',
+    },
+  ], [])
+
+  // Memoized stats (trebuie înainte de orice return)
+  const stats = useMemo(() => [
+    { value: '1200+', label: 'Reclame Generate', icon: TrendingUp },
+    { value: '500+', label: 'Clienți Mulțumiți', icon: Users },
+    { value: '< 30s', label: 'Timp Generare', icon: Clock },
+  ], [])
+
+  // Memoized carousel images array (trebuie înainte de orice return)
+  const carouselImages = useMemo(() => [
+    'galerie-1.jpg',
+    'galerie-2.jpg',
+    'galerie-3.jpg',
+    'galerie-4.jpg',
+    'galerie-5.jpg',
+    'galerie-6.jpg',
+    'galerie-7.jpg',
+    'galerie-8.jpg',
+    'galerie-9.jpg',
+    'galerie-10.jpg',
+  ], [])
+
+  const handleChoosePlan = useCallback(async (pkg: typeof pricingPackages[0]) => {
     // Verifică dacă utilizatorul este logat
     const { data: { user: currentUser } } = await supabase.auth.getUser()
     
@@ -200,7 +304,7 @@ export default function Home() {
 
     // Utilizatorul este 100% logat - continuă cu Stripe
     handleStripeCheckout(pkg)
-  }
+  }, [handleStripeCheckout])
 
   // Dacă se verifică autentificarea, afișează loading
   if (isChecking) {
@@ -220,18 +324,6 @@ export default function Home() {
         </motion.div>
       </div>
     )
-  }
-
-  // Costuri în credite
-  const TEXT_GENERATION_COST = 3
-  const IMAGE_GENERATION_COST = 9
-  
-  // Calculează costul total
-  const calculateCost = () => {
-    if (generateOnlyText) {
-      return TEXT_GENERATION_COST
-    }
-    return IMAGE_GENERATION_COST
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -342,68 +434,6 @@ export default function Home() {
     }
   }
 
-  const pricingPackages = [
-    {
-      name: 'Test',
-      credits: 1,
-      price: 0.50,
-      features: [
-        '1 credit pentru testare',
-        'Test Stripe integration',
-      ],
-      color: 'from-green-500 to-emerald-500',
-      borderColor: 'border-green-500/50',
-    },
-    {
-      name: 'Starter',
-      credits: 40,
-      price: 10,
-      features: [
-        '40 credite',
-        '~10 generări copywriting (4 credite)',
-        '~4 generări imagini (9 credite)',
-        'Sau combinații personalizate',
-        'Suport email',
-      ],
-      color: 'from-blue-500 to-cyan-500',
-      borderColor: 'border-blue-500/50',
-    },
-    {
-      name: 'Pro',
-      credits: 280,
-      price: 50,
-      features: [
-        '280 credite',
-        '~70 generări copywriting (4 credite)',
-        '~31 generări imagini (9 credite)',
-        'Sau combinații personalizate',
-        'Suport dedicat',
-      ],
-      color: 'from-orange-500 to-red-500',
-      borderColor: 'border-orange-500/50',
-      popular: true,
-    },
-    {
-      name: 'Growth',
-      credits: 100,
-      price: 20,
-      features: [
-        '100 credite',
-        '~25 generări copywriting (4 credite)',
-        '~11 generări imagini (9 credite)',
-        'Sau combinații personalizate',
-        'Suport priorititar',
-      ],
-      color: 'from-purple-500 to-pink-500',
-      borderColor: 'border-purple-500/50',
-    },
-  ]
-
-  const stats = [
-    { value: '1200+', label: 'Reclame Generate', icon: TrendingUp },
-    { value: '500+', label: 'Clienți Mulțumiți', icon: Users },
-    { value: '< 30s', label: 'Timp Generare', icon: Clock },
-  ]
 
   return (
     <main className="min-h-screen bg-[#0a0a0f] text-white relative overflow-hidden">
@@ -412,6 +442,7 @@ export default function Home() {
         {/* Large animated color blobs */}
         <motion.div
           className="absolute top-0 left-0 w-[600px] h-[600px] bg-blue-500/20 rounded-full blur-[120px]"
+          style={{ willChange: 'transform' }}
           animate={{
             x: [0, 100, -50, 0],
             y: [0, 150, 100, 0],
@@ -425,6 +456,7 @@ export default function Home() {
         />
         <motion.div
           className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-[120px]"
+          style={{ willChange: 'transform' }}
           animate={{
             x: [0, -80, 50, 0],
             y: [0, -100, 80, 0],
@@ -439,6 +471,7 @@ export default function Home() {
         />
         <motion.div
           className="absolute bottom-0 left-1/3 w-[700px] h-[700px] bg-green-500/15 rounded-full blur-[140px]"
+          style={{ willChange: 'transform' }}
           animate={{
             x: [0, 120, -80, 0],
             y: [0, -150, -100, 0],
@@ -453,6 +486,7 @@ export default function Home() {
         />
         <motion.div
           className="absolute top-1/2 right-1/4 w-[400px] h-[400px] bg-pink-500/20 rounded-full blur-[100px]"
+          style={{ willChange: 'transform' }}
           animate={{
             x: [0, -60, 40, 0],
             y: [0, 80, -60, 0],
@@ -467,6 +501,7 @@ export default function Home() {
         />
         <motion.div
           className="absolute bottom-1/4 right-1/3 w-[550px] h-[550px] bg-cyan-500/15 rounded-full blur-[130px]"
+          style={{ willChange: 'transform' }}
           animate={{
             x: [0, 90, -70, 0],
             y: [0, -120, 90, 0],
@@ -481,6 +516,7 @@ export default function Home() {
         />
         <motion.div
           className="absolute top-3/4 left-1/4 w-[450px] h-[450px] bg-orange-500/15 rounded-full blur-[110px]"
+          style={{ willChange: 'transform' }}
           animate={{
             x: [0, -70, 50, 0],
             y: [0, 100, -80, 0],
@@ -534,27 +570,15 @@ export default function Home() {
               <p className="md:hidden text-base text-gray-400 mb-6 leading-relaxed text-center">
                 Platformă avansată cu tool-uri de marketing pentru a-ți crește business-ul.
               </p>
-              <p className="hidden md:block text-lg text-gray-400 mb-6 leading-relaxed max-w-xl">
+              <p className="hidden md:block text-lg text-gray-400 mb-8 leading-relaxed max-w-xl">
                 AdLence.ai este o platformă avansată cu multiple tool-uri de marketing pentru nevoile tale. 
                 De la generarea de reclame și copywriting, la analiză de piață și planificare de conținut - 
                 tot ce ai nevoie pentru a-ți crește business-ul într-un singur loc.
               </p>
 
-              {/* SEO Content Section - Hidden visually but readable by search engines */}
-              <div className="hidden md:block mb-8 max-w-xl">
-                <p className="text-base text-gray-500 leading-relaxed mb-4">
-                  AdLence.ai reprezintă soluția completă pentru <strong>marketing digital în România cu AI</strong>, oferind business-urilor din țară acces la tehnologii avansate de inteligență artificială pentru crearea de campanii publicitare eficiente și optimizate. Platforma noastră combină puterea inteligenței artificiale cu expertiza în domeniul marketingului digital, permițând companiilor să genereze reclame profesionale, conținut optimizat și strategii de marketing personalizate în timp record.
-                </p>
-                <p className="text-base text-gray-500 leading-relaxed mb-4">
-                  În contextul pieței de <strong>marketing digital din România</strong>, AdLence.ai se poziționează ca lider în domeniul soluțiilor automate de marketing, oferind tool-uri inovatoare care transformă modul tradițional de creare a conținutului publicitar. Prin utilizarea tehnologiilor de AI, platforma noastră permite generarea automată de reclame, copywriting optimizat pentru conversie, imagini publicitare de înaltă calitate și analize detaliate ale pieței și concurenților, toate acestea fiind adaptate specific pentru nevoile business-urilor românești.
-                </p>
-                <p className="text-base text-gray-500 leading-relaxed">
-                  Fie că ești o agenție de marketing digital din București sau un business local care dorește să-și extindă prezența online, AdLence.ai oferă soluții scalabile și accesibile pentru toate tipurile de companii. Platforma noastră de <strong>marketing digital cu AI</strong> este construită pentru a răspunde provocărilor unice ale pieței românești, oferind suport în limba română și adaptare culturală pentru conținutul generat, asigurând astfel că mesajele tale publicitare rezonează perfect cu audiența țintă.
-                </p>
-              </div>
-
               <div className="flex flex-wrap gap-4 mb-8 justify-center md:justify-start">
                 <motion.button
+                  onClick={() => router.push('/dashboard')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-purple-500/25"
@@ -562,6 +586,7 @@ export default function Home() {
                   Începe Acum
                 </motion.button>
                 <motion.button
+                  onClick={() => router.push('/dashboard')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-6 py-3 bg-transparent border-2 border-gray-800 hover:border-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
@@ -993,7 +1018,7 @@ export default function Home() {
                           <Sparkles className="w-4 h-4" />
                           <span className="text-sm">{generateOnlyText ? 'Generează Text' : 'Generează Reclamă'}</span>
                           <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full font-semibold">
-                            {calculateCost()} credite
+                            {calculateCost} credite
                           </span>
                         </>
                       )}
@@ -1014,19 +1039,8 @@ export default function Home() {
                 {/* Duplicate ads for infinite scroll - 2 sets pentru loop smooth */}
                 {[...Array(2)].map((_, duplicateIndex) => (
                   <div key={duplicateIndex} className="flex gap-4 lg:gap-6 flex-shrink-0">
-                    {/* Array cu 10 imagini */}
-                    {[
-                      'galerie-1.jpg',
-                      'galerie-2.jpg',
-                      'galerie-3.jpg',
-                      'galerie-4.jpg',
-                      'galerie-5.jpg',
-                      'galerie-6.jpg',
-                      'galerie-7.jpg',
-                      'galerie-8.jpg',
-                      'galerie-9.jpg',
-                      'galerie-10.jpg',
-                    ].map((imageName, index) => (
+                    {/* Array cu 10 imagini - memoized */}
+                    {carouselImages.map((imageName, index) => (
                       <motion.div
                         key={`${duplicateIndex}-${index}`}
                         whileHover={{ y: -8, scale: 1.02 }}
@@ -1034,11 +1048,13 @@ export default function Home() {
                       >
                         {/* Ad Preview */}
                         <div className="aspect-[2/3] relative overflow-hidden">
-                          {/* Imaginea reală */}
+                          {/* Imaginea reală - optimizată cu loading lazy */}
                           <img
                             src={`/carousel/${imageName}`}
                             alt={`Galerie ${index + 1}`}
                             className="w-full h-full object-cover"
+                            loading="lazy"
+                            decoding="async"
                             onError={(e) => {
                               // Fallback dacă imaginea nu există
                               const target = e.target as HTMLImageElement;
@@ -1051,7 +1067,7 @@ export default function Home() {
                           />
                           
                           {/* Overlay gradient pentru text readability */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                         </div>
                       </motion.div>
                     ))}
@@ -1086,7 +1102,8 @@ export default function Home() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-3 gap-6 max-w-6xl mx-auto">
             {/* Tool 1: Analiză de Piață */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -1171,6 +1188,115 @@ export default function Home() {
               </motion.button>
             </motion.div>
           </div>
+
+          {/* Mobile Carousel */}
+          <div className="md:hidden max-w-md mx-auto relative overflow-hidden">
+            <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${currentToolIndex * 100}%)` }}>
+              {/* Tool 1: Analiză de Piață */}
+              <div className="min-w-full px-4">
+                <motion.div
+                  key="tool-1"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.5 }}
+                  className="relative bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border-2 border-blue-500/50 rounded-2xl p-8 shadow-2xl flex flex-col h-full"
+                >
+                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-xl mb-6">
+                    <Target className="w-8 h-8 text-blue-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-4">Analiză de Piață și Concurență</h3>
+                  <p className="text-gray-400 mb-6 leading-relaxed flex-grow">
+                    Analizează piața și competitorii pentru a vedea ce funcționează deja. 
+                    Obține insights valoroase despre strategiile care marchează în industria ta.
+                  </p>
+                  <motion.button
+                    onClick={() => router.push('/dashboard?tool=analiza-piata')}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 mt-auto"
+                  >
+                    <span>Analizează Piața</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </motion.button>
+                </motion.div>
+              </div>
+
+              {/* Tool 2: Copywriting */}
+              <div className="min-w-full px-4">
+                <motion.div
+                  key="tool-2"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.5 }}
+                  className="relative bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border-2 border-purple-500/50 rounded-2xl p-8 shadow-2xl flex flex-col h-full"
+                >
+                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl mb-6">
+                    <Zap className="w-8 h-8 text-purple-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-4">Copywriting Publicitar</h3>
+                  <p className="text-gray-400 mb-6 leading-relaxed flex-grow">
+                    Generează texte clare și convingătoare pentru marketing. 
+                    De la postări pe social media la descrieri de produse, creează conținut care vinde.
+                  </p>
+                  <motion.button
+                    onClick={() => router.push('/dashboard?tool=copywriting')}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 mt-auto"
+                  >
+                    <span>Generează Copywriting</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </motion.button>
+                </motion.div>
+              </div>
+
+              {/* Tool 3: Planificare Conținut */}
+              <div className="min-w-full px-4">
+                <motion.div
+                  key="tool-3"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.5 }}
+                  className="relative bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border-2 border-green-500/50 rounded-2xl p-8 shadow-2xl flex flex-col h-full"
+                >
+                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-xl mb-6">
+                    <Award className="w-8 h-8 text-green-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-4">Planificare de Conținut</h3>
+                  <p className="text-gray-400 mb-6 leading-relaxed flex-grow">
+                    Construiește un plan clar de postare pentru social media. 
+                    Organizează-ți conținutul pe săptămâni și luni pentru o strategie consistentă.
+                  </p>
+                  <motion.button
+                    onClick={() => router.push('/dashboard?tool=planificare-conținut')}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-green-500/25 flex items-center justify-center gap-2 mt-auto"
+                  >
+                    <span>Planifică Conținut</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </motion.button>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Dots indicator */}
+            <div className="flex justify-center gap-2 mt-6">
+              {[0, 1, 2].map((index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentToolIndex(index)}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    currentToolIndex === index ? 'w-8 bg-blue-500' : 'w-2 bg-gray-600'
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* Generated Result Section */}
@@ -1248,6 +1374,7 @@ export default function Home() {
                         src={generatedImageUrl}
                         alt="Generated ad"
                         className="w-full h-auto"
+                        loading="lazy"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
                     </motion.div>
@@ -1302,18 +1429,9 @@ export default function Home() {
                 Pachete de Prețuri
               </span>
             </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-6">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
               Alege pachetul de credite perfect pentru nevoile tale. Copywriting (4 credite), imagini (9 credite), analiză de piață (6 credite), strategie video (6 credite), planificare (7 credite).
             </p>
-            {/* SEO Content for Pricing Section */}
-            <div className="max-w-4xl mx-auto text-center">
-              <p className="text-base text-gray-500 leading-relaxed mb-4">
-                Pachetele noastre de <strong>marketing digital cu AI</strong> sunt concepute pentru a răspunde nevoilor diverse ale business-urilor din România, de la startup-uri care doresc să testeze platforma până la companii mari care necesită volume mari de conținut generat. Fiecare pachet oferă flexibilitate maximă în utilizarea creditelor, permițându-ți să alegi exact ce tool-uri de marketing digital ai nevoie pentru fiecare proiect, fie că vorbim despre generare de reclame, copywriting optimizat pentru conversie, analize de piață sau planificare strategică de conținut.
-              </p>
-              <p className="text-base text-gray-500 leading-relaxed">
-                Sistemul nostru de credite pentru <strong>marketing digital în România</strong> este transparent și fără costuri ascunse, permițându-ți să controlezi exact bugetul alocat pentru fiecare tip de serviciu. Creditele nu expiră, oferind flexibilitate completă în planificarea campaniilor tale de marketing, iar platforma noastră de inteligență artificială generează conținut de înaltă calitate adaptat specific pentru piața românească și audiența ta țintă.
-              </p>
-            </div>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
@@ -1387,6 +1505,59 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
+        </section>
+
+        {/* SEO Content Section - Final */}
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="max-w-4xl mx-auto"
+          >
+            <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-8 md:p-12 pb-12 md:pb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-center bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Marketing Digital în România cu AI
+              </h2>
+              
+              <div className="space-y-6 text-gray-300 leading-relaxed pb-4">
+                <p className="text-base md:text-lg">
+                  AdLence.ai este platforma ta completă pentru <strong className="text-white">marketing digital în România cu AI</strong>. Oferim business-urilor din țară acces la tehnologii avansate de inteligență artificială pentru crearea de campanii publicitare eficiente și optimizate.
+                </p>
+                
+                <p className="text-base md:text-lg">
+                  Platforma noastră combină puterea inteligenței artificiale cu expertiza în domeniul <strong className="text-white">marketingului digital</strong>, permițând companiilor să genereze reclame profesionale, conținut optimizat și strategii de marketing personalizate în timp record.
+                </p>
+
+                <div className="grid md:grid-cols-2 gap-6 mt-8">
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-white mb-3">Tool-uri Inovatoare</h3>
+                    <p className="text-base text-gray-400">
+                      Prin utilizarea tehnologiilor de AI, platforma permite generarea automată de reclame, copywriting optimizat pentru conversie, imagini publicitare de înaltă calitate și analize detaliate ale pieței și concurenților.
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-white mb-3">Adaptat pentru România</h3>
+                    <p className="text-base text-gray-400">
+                      Toate soluțiile sunt adaptate specific pentru nevoile business-urilor românești, cu suport în limba română și adaptare culturală pentru conținutul generat.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-8 pt-8 border-t border-gray-700/50">
+                  <h3 className="text-xl font-semibold text-white mb-4">Pachete Flexibile pentru Orice Business</h3>
+                  <p className="text-base md:text-lg text-gray-300 mb-4">
+                    Pachetele noastre de <strong className="text-white">marketing digital cu AI</strong> sunt concepute pentru a răspunde nevoilor diverse ale business-urilor din România, de la startup-uri care doresc să testeze platforma până la companii mari care necesită volume mari de conținut generat.
+                  </p>
+                  <p className="text-base md:text-lg text-gray-300 mb-0">
+                    Fiecare pachet oferă flexibilitate maximă în utilizarea creditelor, permițându-ți să alegi exact ce tool-uri de marketing digital ai nevoie pentru fiecare proiect. Sistemul nostru de credite este transparent și fără costuri ascunse, iar creditele nu expiră, oferind flexibilitate completă în planificarea campaniilor tale de marketing.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </section>
       </div>
 
