@@ -1096,9 +1096,9 @@ export default function Home() {
                 Tool-uri de Marketing
               </span>
             </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              Descoperă ce mai poți face cu AdLence.ai. De la analiză de piață la planificare de conținut, 
-              avem tot ce ai nevoie pentru a-ți dezvolta strategia de marketing.
+            <p className="text-base md:text-lg text-gray-400 max-w-2xl mx-auto">
+              <span className="md:hidden">Descoperă tool-uri de marketing pentru strategia ta.</span>
+              <span className="hidden md:inline">Descoperă ce mai poți face cu AdLence.ai. De la analiză de piață la planificare de conținut, avem tot ce ai nevoie pentru a-ți dezvolta strategia de marketing.</span>
             </p>
           </motion.div>
 
@@ -1429,7 +1429,7 @@ export default function Home() {
                 Pachete de Prețuri
               </span>
             </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto hidden md:block">
               Alege pachetul de credite perfect pentru nevoile tale. Copywriting (4 credite), imagini (9 credite), analiză de piață (6 credite), strategie video (6 credite), planificare (7 credite).
             </p>
           </motion.div>
